@@ -1,0 +1,832 @@
+## 
+# (c) 2021 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Environment Plan on Pull request
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+    paths-ignore:
+      - '.github/workflows/**'
+      - 'modules/**'
+      - '.beacon'
+      - '.destroy'
+
+permissions:
+  contents: read
+  packages: write
+  statuses: write
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  # Plan Job:
+  #   Just makes validations that the Terraform scripts are OK to continue
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      auto_approve: ${{ steps.check_automatic.outputs.autoapprove }}
+      bluegreen_label: ${{ steps.bluegreen.outputs.label }}
+      bluegreen_nextlabel: ${{ steps.bluegreen.outputs.nextlabel }}
+      bluegreen_action: ${{ steps.bluegreen.outputs.action_plan }}
+    steps:
+      # Automatic Labeling from .github/labeler.yml
+      - uses: actions/labeler@v3
+        with:
+          repo-token: ${{ secrets.BOT_TOKEN }}
+
+      # Get the owner repo
+      - name: Get owner
+        id: getowner
+        run: |
+          repo_owner=`echo "$GITHUB_REPOSITORY" | cut -f 1 -d "/"`
+          repo_name=`echo "$GITHUB_REPOSITORY" | cut -f 2 -d "/"`
+          echo "::set-output name=owner::$repo_owner"
+          echo "::set-output name=repo_name::$repo_name"
+
+      # Source Checkout from PR Head
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+
+      # Install yq tool
+      - name: Install yq
+        run: |
+          sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
+      # Install terraform tools
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      # Automatic environment checking from OWNERS file
+      # usually this is not automatic for blue-green envs
+      - name: Check if automatic
+        id: check_automatic
+        run: |
+          is_auto=$(yq e '.automatic' OWNERS)
+          if [[ "$is_auto" != "true" ]] ; then
+            is_auto=false
+          fi
+          echo "::set-output name=autoapprove::$is_auto"
+
+      # Perform Terraform formatting check
+      - name: Terraform fmt
+        id: fmt
+        run: terraform fmt -check
+        continue-on-error: true
+
+      # Perform Terraform Init in order to check if all modules are OK
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Perform Terraform Validation of HCL scripts
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+        continue-on-error: true
+
+      # Check Terraform Workspaces are in place
+      - name: Check Workspaces
+        id: workspace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          terraform workspace list
+
+      # Creation of BLUE tier Terraform workspace if not already exists
+      - name: Create Workspace BLUE
+        id: blue-workspace
+        if: ${{ ! contains(steps.workspace.outputs.stdout, 'blue') }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          terraform workspace new blue
+
+      # Creation of GREEN tier Terraform workspace if not already exists
+      - name: Create Workspace GREEN
+        id: green-workspace
+        if: ${{ ! contains(steps.workspace.outputs.stdout, 'green') }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          terraform workspace new green
+
+      - name: Blue Green Deployment staging check
+        id: bluegreen
+        run: |
+          label=$(cat .tier_enabled)
+          action=$(cat .beacon | head -1)
+          nextlabel="blue-green/$label"
+
+          echo "::set-output name=action_plan::${action}"
+          echo "::set-output name=nextlabel::${nextlabel}"
+          echo "::set-output name=label::${label}"
+
+      # Report as PR comment the output of validations
+      - name: Report Validations Output
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `#### Action Step: \`${{ steps.bluegreen.outputs.action_plan }}\`
+            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Validation 🤖\`${{ steps.validate.outputs.stdout }}\`
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+  
+  # Deploy Job
+  #   Perform deployment as per the step indicator by .beacon file.
+  #   Slash commands modifies the PR HEAD accordingly to make this flow run properly.
+  #   Runs unless a rollback was not requested.
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - plan
+    if: needs.plan.outputs.bluegreen_action != 'rollback'
+    steps:
+      # Check out of the PR HEAD (default)
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+
+      # Install Terraform
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      # Run Terraform Init, as we start on clean workspace
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Switch the workspace to the one should perform in the PR
+      - name: Terraform Workspace Switch
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: terraform workspace select ${{ needs.plan.outputs.bluegreen_label }}
+
+      - name: Create Plan Directory
+        run: mkdir -p ./.plans
+
+      # Run Terraform Plan to validate all changes
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -var-file=$(cat .tier_enabled).tfvars -out ./.plans/plan.out
+        continue-on-error: ${{ needs.plan.outputs.auto_approve != 'true' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Report the plan output to PR as new Comment
+      - name: Report Plan Output
+        uses: actions/github-script@v4
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `#### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            
+            <details><summary>Show Plan</summary>
+            
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+            
+            </details>
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      # Terraform Apply with the plan output left
+      - name: Terraform Apply
+        id: apply
+        if: steps.plan.outcome == 'success'
+        run: terraform apply -no-color ./.plans/plan.out
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Report the apply output to the PR as new comment
+      - name: Report terraform apply output
+        uses: actions/github-script@v4
+        env:
+          APPLY: "terraform apply\n${{ steps.apply.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `## Changes reconciled on New Environment
+            #### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
+            #### Terraform Apply 📖\`${{ steps.apply.outcome }}\`
+            <details><summary>Show plan/apply report</summary>
+            
+            \`\`\`\n
+            ${process.env.APPLY}
+            \`\`\`
+            
+            </details>
+
+            Submit: */open-new | /close-old | /force-switch* in order to continue with next step of Blue/Green Deployment.
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      
+      # Fail the workflow if the plan or apply was not success
+      - name: Fail the workflow
+        if: ${{ steps.plan.outcome != 'success' || steps.apply.outcome != 'success' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('Plan or Apply for Deploy was not successful!')
+  
+  # Disable old Job
+  #   Disables the old environment based on the blue_green_action
+  #   It runs on master branch in order to maintain consistency everything but the DNS
+  #   As it runs on Master a makefile "make close-traffic" should be made in order to perform
+  #   the DNS change properly
+  disable-old:
+    runs-on: ubuntu-latest
+    needs:
+      - plan
+      - deploy
+    if: needs.plan.outputs.bluegreen_action == 'close_old'
+    steps:
+      # Checkout of master branch
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          ref: master
+
+      # Install Terraform
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      # Working on Master will be .tier_enabled
+      - name: Blue Green Deployment destroy check
+        id: destroy
+        run: |
+          label=$(cat .tier_enabled)
+
+          echo "::set-output name=label::${label}"
+
+      # Will force a make close-traffic on current
+      - name: Close Traffic on master
+        run: make close-traffic
+
+      # Run Terraform Init, as we start on clean workspace
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Switch the workspace to the one should perform in the PR
+      - name: Terraform Workspace Switch
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: terraform workspace select ${{ steps.destroy.outputs.label }}
+
+      - name: Create Plan Directory
+        run: mkdir -p ./.plans
+
+      # Run Terraform plan to validate all changes
+      - name: Terraform Plan
+        id: plan
+        run: terraform plan -no-color -var-file=${RUN_LABEL}.tfvars -out ./.plans/plan.out
+        continue-on-error: ${{ needs.plan.outputs.auto_approve != 'true' }}
+        env:
+          RUN_LABEL: ${{ steps.destroy.outputs.label }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Print Plan Output to PR as comment
+      - name: Report Plan Output
+        uses: actions/github-script@v4
+        env:
+          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `#### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
+            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
+            
+            <details><summary>Show Plan</summary>
+            
+            \`\`\`\n
+            ${process.env.PLAN}
+            \`\`\`
+            
+            </details>
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+      
+      # Run terraform apply with saved plan in workspace
+      - name: Terraform Apply
+        id: apply
+        if: steps.plan.outcome == 'success'
+        run: terraform apply -no-color ./.plans/plan.out
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Print Terraform apply Output as comment to PR
+      - name: Report terraform apply output
+        uses: actions/github-script@v4
+        env:
+          APPLY: "terraform apply\n${{ steps.apply.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `## Changes reconciled on Old Environment
+            #### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
+            #### Terraform Apply 📖\`${{ steps.apply.outcome }}\`
+            <details><summary>Show plan/apply report</summary>
+            
+            \`\`\`\n
+            ${process.env.APPLY}
+            \`\`\`
+            
+            </details>
+
+            Submit: */approve | /approved | /lgtm* in order to continue with next step of Blue/Green Deployment.
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+
+      # Fail the workflow if the plan or apply was not success
+      - name: Fail the workflow
+        if: ${{ steps.plan.outcome != 'success' || steps.apply.outcome != 'success' }}
+        uses: actions/github-script@v3
+        with:
+          script: |
+            core.setFailed('Plan or Apply for Deploy was not successful!')
+
+  # Proceed with labeling if the procedure is candidate to be autoapproved
+  label_autoapprove:
+    needs:
+      - plan
+    runs-on: ubuntu-latest
+    if: ${{ needs.plan.outputs.auto_approve == 'true' }}
+    steps:
+      - uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          script: |
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['approved', 'automatic-environment']
+            })
+
+  # Job to add the required reviewers and approvals to the PR
+  add_reviewers_and_approvals:
+    needs:
+      - plan
+    runs-on: ubuntu-latest
+    if: ${{ needs.plan.outputs.auto_approve != 'true' }}
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Read reviewers from file
+        id: reviewers
+        run: |
+          count=$(yq e '.requiredReviewers' OWNERS)
+          reviewers_as_json=$(yq e -j -I=0 '.reviewers' OWNERS)
+          echo "::set-output name=count::$count"
+          echo "::set-output name=as_json::$reviewers_as_json"
+
+      - name: Add review and approval labels
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          script: |
+            const reviewers_json=JSON.parse('${{ steps.reviewers.outputs.as_json }}');
+            const reviewers_count=${{ steps.reviewers.outputs.count }};
+            const label='${{ needs.plan.outputs.bluegreen_label }}';
+            const nextlabel='${{ needs.plan.outputs.bluegreen_nextlabel }}';
+            const labels = ['approval-required','review-required'];
+            const actor = '${{ github.event.pull_request.user.login }}'
+
+            if ( nextlabel != '' )
+              labels.push(nextlabel)
+
+            var reviewers = []
+            for ( const rev of reviewers_json ) {
+              if ( actor != rev ) {
+                reviewers.push(rev)
+              }
+            }
+
+            github.pulls.requestReviewers({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              reviewers: reviewers
+            });
+
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: labels
+            });
+
+  # Place a do-not-merge label untl all the conditions are met
+  #   the conditions are:
+  #     labels are: blue-green/new or blue-green/complete
+  do_not_merge_label:
+    needs:
+      - plan
+    runs-on: ubuntu-latest
+    if: ${{ needs.plan.outputs.auto_approve != 'true' }}
+    outputs:
+      is_mergeable: ${{ steps.check.outputs.result }}
+    steps:
+      - name: Set DO-NOT-MERGE if not in last step
+        id: check
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          result-encoding: string
+          script: |
+            const {data: pullLabels} = await github.issues.listLabelsOnIssue({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const labels = pullLabels.map(label => label.name);
+
+            var is_mergeable = false;
+
+            for (const aLabel of labels) {
+              if ( aLabel == 'blue-green/new' || aLabel == 'blue-green/completed' ) {
+                is_mergeable = true;
+              }
+            }
+
+            if ( ! is_mergeable ) {
+              github.issues.addLabels({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                labels: [ 'do-not-merge' ]
+              });
+            }
+
+            return ( is_mergeable ? 'true' : 'false' );
+
+  # Perform Rollback on master as a Rollback was requested
+  rollback-on-master:
+    needs:
+      - plan
+    if: needs.plan.outputs.bluegreen_action == 'rollback'
+    runs-on: ubuntu-latest
+    steps:
+      # Install terraform
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      # Get pull request base
+      - name: Get Pull Request BASE Ref
+        uses: actions/github-script@v4
+        id: the_pull
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          result-encoding: string
+          script: |
+            const {data: thePull} = await github.pulls.get({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            return thePull.base.ref;
+
+      # Proceed with checkout of source with all the references (depth=0)  
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.the_pull.outputs.result }}
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Retrieve tier to run
+        id: tier_to_run
+        run: |
+          tier=
+
+          if [ -f .tier_enabled ] ; then
+            tier=$(cat .tier_enabled) 
+          fi
+          echo "::set-output name=tier::$tier"
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Create Plan Directory
+        run: mkdir -p ./.plans
+      - name: Terraform Select Master Workspace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: terraform workspace select ${{ steps.tier_to_run.outputs.tier }}
+
+      - name: Terraform Plan on Master Rollback Traffic
+        id: plan
+        if: steps.tier_to_run.outputs.tier != ''
+        run: terraform plan -no-color -var-file=${{ steps.tier_to_run.outputs.tier }}.tfvars -out ./.plans/plan.out
+        continue-on-error: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Terraform Apply on Master Workspace
+        id: apply
+        if: steps.tier_to_run.outputs.tier != ''
+        run: terraform apply -no-color ./.plans/plan.out
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Report terraform apply output
+        uses: actions/github-script@v4
+        env:
+          PLAN: "terraform plan ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.plan.outputs.stdout }}"
+          APPLY: "terraform apply ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.apply.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `### Rollback result on Master
+            #### Terraform Plan ${{ steps.tier_to_run.outputs.tier }}📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Apply ${{ steps.tier_to_run.outputs.tier }}📖\`${{ steps.apply.outcome }}\`
+            <details><summary>Show plan/apply report</summary>
+            
+            \`\`\`\n
+            ${process.env.PLAN}
+            ---\n
+            ${process.env.APPLY}
+            \`\`\`
+            
+            </details>
+
+            Rollback Complete Pull request may be closed!
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+  # Perform Rollback on PR HEAD as a Rollback was requested
+  rollback-on-branch:
+    needs:
+      - plan
+      - rollback-on-master
+    if: needs.plan.outputs.bluegreen_action == 'rollback'
+    runs-on: ubuntu-latest
+    steps:
+      # Install terraform
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      # Get pull request head
+      - name: Get Pull Request HEAD Ref
+        uses: actions/github-script@v4
+        id: the_pull
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          result-encoding: string
+          script: |
+            const {data: thePull} = await github.pulls.get({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+            return thePull.head.ref;
+
+      # Proceed with checkout of source with all the references (depth=0)  
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          ref: ${{ steps.the_pull.outputs.result }}
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Retrieve tier to run
+        id: tier_to_run
+        run: |
+          tier=
+
+          if [ -f .tier_enabled ] ; then
+            tier=$(cat .tier_enabled) 
+          fi
+          echo "::set-output name=tier::$tier"
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Rollback Changes for apply afterwards
+        run: make rollback
+      
+      - name: Create Plan Directory
+        run: mkdir -p ./.plans
+      - name: Terraform Select Master Workspace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: terraform workspace select ${{ steps.tier_to_run.outputs.tier }}
+
+      - name: Terraform Plan on Master Rollback Traffic
+        id: plan
+        if: steps.tier_to_run.outputs.tier != ''
+        run: terraform plan -no-color -var-file=${{ steps.tier_to_run.outputs.tier }}.tfvars -out ./.plans/plan.out
+        continue-on-error: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Terraform Apply on Master Workspace
+        id: apply
+        if: steps.tier_to_run.outputs.tier != ''
+        run: terraform apply -no-color ./.plans/plan.out
+        continue-on-error: true
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Report terraform apply output
+        uses: actions/github-script@v4
+        env:
+          PLAN: "terraform plan ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.plan.outputs.stdout }}"
+          APPLY: "terraform apply ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.apply.outputs.stdout }}"
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const output = `### Rollback result on Branch
+            #### Terraform Plan ${{ steps.tier_to_run.outputs.tier }}📖\`${{ steps.plan.outcome }}\`
+            #### Terraform Apply ${{ steps.tier_to_run.outputs.tier }}📖\`${{ steps.apply.outcome }}\`
+            <details><summary>Show plan/apply report</summary>
+            
+            \`\`\`\n
+            ${process.env.PLAN}
+            ---\n
+            ${process.env.APPLY}
+            \`\`\`
+            
+            </details>
+
+            Rollback Complete Pull request may be closed!
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+              
+            github.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+  # Close PR on Rollback condition
+  #   this closes the PR without merging into target branch
+  close-pull:
+    runs-on: ubuntu-latest
+    needs:
+      - plan
+      - rollback-on-master
+      - rollback-on-branch
+    if: needs.plan.outputs.bluegreen_action == 'rollback'
+    steps:
+      - name: Closes the Pull Request
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const {data: thePull} = await github.pulls.get({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+            })
+
+            github.pulls.update({
+              pull_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'closed',
+            });

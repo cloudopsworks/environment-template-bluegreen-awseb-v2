@@ -1,0 +1,26 @@
+##
+# (c) 2021 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Environment Labeling event tracking for Blue/Green Stepping
+on:
+  pull_request_target:
+    types:
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: write
+  packages: read
+  statuses: write
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  label-track:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test
+        run: echo "A Labeling happened"

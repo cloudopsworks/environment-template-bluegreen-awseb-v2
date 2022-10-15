@@ -1,0 +1,96 @@
+##
+# (c) 2021 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Environment Promotion
+on:
+  repository_dispatch:
+    types:
+      - promote-environment
+      - promote-env
+
+permissions:
+  issues: write
+  checks: read
+  deployments: write
+  contents: write
+  packages: read
+  statuses: write
+
+jobs:
+  env-promotion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Output payload
+        run: |
+          echo "This is the payload received"
+          echo "${{ github.event.client_payload }}"
+
+      # Checkout this repository
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+          token: ${{ secrets.BOT_TOKEN }}
+
+      # Installs Terraform
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      - name: Create version File
+        run: |
+          echo "VERSION=${{ github.event.client_payload.promote.version }}" > VERSION
+          echo "CHART=${{ github.event.client_payload.promote.repository }}" >> VERSION
+          echo "TARGET=${{ github.event.client_payload.promote.releasename }}" >> VERSION
+          echo "PLATFORM=${{ github.event.client_payload.promote.platform }}" >> VERSION
+
+      - name: Check which tier we are
+        id: current-tier
+        run: |
+          tier="blue-green/new"
+          
+          if [ -f .tier_enabled ] ; then
+            tier=$(cat .tier_enabled)
+
+            make switch-from-$tier
+          fi
+          echo "::set-output name=label::$tier"
+
+      - name: Push change for release
+        run: |
+          make version
+
+      # Do Tidy on terraform Files
+      - name: Terraform tidy up
+        run: terraform fmt
+
+      # - name: Commit change to branch
+      #   uses: EndBug/add-and-commit@v9
+      #   with:
+      #     push: false
+      #     add: "."
+      #     author_name: ${{ secrets.BOT_USER }}
+      #     author_email: ${{ secrets.BOT_EMAIL }}
+      #     message: "chore: promote from ${{ github.event.client_payload.promote.repository }} to ${{ github.event.client_payload.promote.releasename }} - v${{ github.event.client_payload.promote.version }}"
+      - name: Push change to Branch
+        run: |
+          git add .
+          git config --global user.name "${{ secrets.BOT_USER }}"
+          git config --global user.email "${{ secrets.BOT_EMAIL }}"
+          git commit -a -m "chore: promote from ${{ github.event.client_payload.promote.repository }} to ${{ github.event.client_payload.promote.releasename }} - v${{ github.event.client_payload.promote.version }}"
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          committer: ${{ secrets.BOT_USER }} <${{ secrets.BOT_EMAIL }}>
+          branch: promote-${{ github.event.client_payload.promote.releasename }}-v${{ github.event.client_payload.promote.version }}
+          #base: "master"
+          title: "Promote ${{ github.event.client_payload.promote.releasename }} v${{ github.event.client_payload.promote.version }}"
+          token: ${{ secrets.BOT_TOKEN }}
+          labels: ${{ steps.current-tier.outputs.label }}
+          body: |
+            Promotion of ${{ github.event.client_payload.promote.releasename }} v${{ github.event.client_payload.promote.version }}
+            Automatic Merge will be performed upon approval
+
+            Closes ${{ github.event.client_payload.promote.fromissue }} by ${{ github.event.client_payload.promote.fromauthor }}

@@ -1,0 +1,131 @@
+##
+# (c) 2021 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+
+##
+# This module to manage DNS association.
+#   - This can be commented out to disable DNS management (not recommended)
+#
+module "app_dns" {
+  count            = terraform.workspace != "default" ? 1 : 0
+  source           = "cloudopsworks/beanstalk-dns/aws"
+  version          = "1.0.1"
+  region           = var.region
+  sts_assume_role  = var.sts_assume_role
+
+  release_name                = "<RELEASE-NAME>"
+  namespace                   = format("%s-%s", var.namespace, terraform.workspace)
+  domain_name                 = "DOMAIN WHERE TO CREATE ALIAS"
+  domain_name_alias_prefix    = "DOMAIN NAME ALIAS"
+  domain_name_weight          = var.dns_weight
+  beanstalk_environment_cname = module.beanstalk_app.0.environment_cname
+}
+
+module "app_version" {
+  count            = terraform.workspace != "default" ? 1 : 0
+  source           = "cloudopsworks/beanstalk-version/aws"
+  version          = "1.0.2"
+  region           = var.region
+  sts_assume_role  = var.sts_assume_role
+
+  release_name     = "<RELEASE-NAME>"
+  source_name      = "<CHART-NAME-ON-REPO"
+  source_version   = var.default_version
+  namespace        = var.namespace
+  solution_stack   = "SOLUTION_STACK"
+  repository_owner = var.repository_owner
+  # Uncomment below to override the default source for the solution stack
+  #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
+  # force_source_compressed = true
+  # source_compressed_type  = "zip"
+
+  application_versions_bucket = local.application_versions_bucket
+
+  beanstalk_application          = "BEANSTALK APPLICATION WHERE TO BUILD"
+}
+
+module "beanstalk_app" {
+  count            = terraform.workspace != "default" ? 1 : 0
+  source           = "cloudopsworks/beanstalk-deploy/aws"
+  version          = "1.0.0"
+  region           = var.region
+  sts_assume_role  = var.sts_assume_role
+
+  release_name     = "<RELEASE-NAME>"
+  namespace        = format("%s-%s", var.namespace, terraform.workspace)
+  solution_stack   = "SOLUTION_STACK"
+  # Solution stack is one of:
+  #   java      = "^64bit Amazon Linux 2 (.*) Corretto 8(.*)$"
+  #   java11    = "^64bit Amazon Linux 2 (.*) Corretto 11(.*)$"
+  #   node      = "^64bit Amazon Linux 2 (.*) Node.js 12(.*)$"
+  #   node14    = "^64bit Amazon Linux 2 (.*) Node.js 14(.*)$"
+  #   go        = "^64bit Amazon Linux 2 (.*) Go (.*)$"
+  #   docker    = "^64bit Amazon Linux 2 (.*) Docker (.*)$"
+  #   docker-m  = "^64bit Amazon Linux 2 (.*) Multi-container Docker (.*)$"
+  #   java-amz1 = "^64bit Amazon Linux (.*)$ running Java 8(.*)$"
+  #   node-amz1 = "^64bit Amazon Linux (.*)$ running Node.js(.*)$"
+
+  application_version_label = module.app_version.0.application_version_label
+
+  private_subnets = [
+    "PRIVATE SUBNET LIST TO DEPLOY INSTANCE & APP",
+  ]
+
+  public_subnets = [
+    "PUBLIC SUBNET LIST TO DEPLOY INSTANCE & APP",
+  ]
+
+  vpc_id = "VPC ID WHERE TO DEPLOY"
+
+  server_types = [ 
+    "SERVER TYPES LIST THIS WILL HELP TO ALLOCATE DEPLOY",
+  ]
+
+
+  beanstalk_application          = "BEANSTALK APPLICATION WHERE TO BUILD"
+  beanstalk_ec2_key              = "EXISITNG EC2 KEY (SSH)"
+  beanstalk_ami_id               = "EXISITNG AMI TO BASE RUN or BLANK is Default"
+  beanstalk_instance_port        = 8081
+  beanstalk_enable_spot          = true
+  beanstalk_default_retention    = 90
+  beanstalk_instance_volume_size = 64
+  beanstalk_instance_volume_type = "gp2"
+  #beanstalk_instance_profile     = "aws-elasticbeanstalk-ec2-role"
+  #beanstalk_service_role         = "aws-elasticbeanstalk-service-role"
+
+  load_balancer_public             = false
+  load_balancer_log_bucket         = local.load_balancer_log_bucket
+  load_balancer_log_prefix         = "<RELEASE-NAME>"
+  load_balancer_ssl_certificate_id = "EXISTING CERTIFICATE"
+  #load_balancer_ssl_policy         = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  #load_balancer_alias              = "OVERRIDE LB ALIAS"
+
+  ##
+  # Optional variable for mapping ports to backend ports:
+  # port_mappings = [
+  #   {
+  #     name      = "default"
+  #     from_port = 80
+  #     to_port   = 8081
+  #     protocol  = "HTTP"
+  #   },
+  #   {
+  #     name             = "port443"
+  #     from_port        = 443
+  #     to_port          = 8443
+  #     protocol         = "HTTPS"
+  #     backend_protocol = "HTTPS"
+  #   }
+  # ]
+
+  # Optional variable injection other than standard values/MODULE_NAME-values.yaml
+  #
+  # vars = {
+  #   "var"          = "DATA"
+  #   "varfile"      = file("textfile.txt)
+  #   "encoded file" = filebas64("binaryfile.bin")
+  # }
+}
+

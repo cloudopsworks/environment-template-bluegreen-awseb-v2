@@ -1,0 +1,17 @@
+##
+# (c) 2021 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+terraform {
+  # Sample S3 backend with encryption
+  backend "s3" {
+    key                  = "terraform.tfstate"
+    bucket               = "terraform-state-bucket"
+    region               = "us-east-1"
+    workspace_key_prefix = "workspaces"
+    encrypt              = true
+    kms_key_id           = "<KMS KEY ID>"
+    dynamodb_table       = "terraform_state_table"
+  }
+}

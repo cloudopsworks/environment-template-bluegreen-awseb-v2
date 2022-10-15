@@ -1,0 +1,187 @@
+# (c) 2021 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Environment Deploy
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - ".github/workflows/**"
+      - "modules/**"
+      - ".beacon"
+      - ".destroy"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Get the owner repo
+      - name: Get owner
+        id: getowner
+        run: |
+          repo_owner=`echo "$GITHUB_REPOSITORY" | cut -f 1 -d "/"`
+          repo_name=`echo "$GITHUB_REPOSITORY" | cut -f 2 -d "/"`
+          echo "::set-output name=owner::$repo_owner"
+          echo "::set-output name=repo_name::$repo_name"
+
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          terraform_version: 1.1.7
+
+      # Get previous tags in order to proceed to generate next version
+      - name: Get Previous tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+        id: previoustag
+        with:
+          fallback: 1.0.0
+        env:
+          GITHUB_TOKEN: "${{ secrets.BOT_TOKEN }}"
+      # Generate next SEMVER number
+      - name: Next Semver
+        uses: WyriHaximus/github-action-next-semvers@v1
+        id: semvers
+        with:
+          version: "${{ steps.previoustag.outputs.tag }}"
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Check Workspaces
+        id: workspace
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          terraform workspace list
+
+      - name: Create Workspace BLUE
+        id: blue-workspace
+        if: ${{ ! contains(steps.workspace.outputs.stdout, 'blue') }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          terraform workspace new blue
+
+      - name: Create Workspace GREEN
+        id: green-workspace
+        if: ${{ ! contains(steps.workspace.outputs.stdout, 'green') }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          terraform workspace new green
+
+      - name: Terraform default Workspace Switch
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: terraform workspace select default
+
+      - name: Create Plan Directory
+        run: mkdir -p ./.plans
+
+      - name: Terraform Plan Default Workspace
+        id: plan
+        run: |
+          terraform plan -no-color -out ./.plans/plan.out
+        continue-on-error: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Terraform Apply Default Workspace
+        id: apply
+        run: |
+          terraform apply -no-color ./.plans/plan.out
+        continue-on-error: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Tier check
+        id: tiercheck
+        run: |
+          tier=none
+          if [ -f .tier_enabled ] ; then
+            tier=$(cat .tier_enabled)
+          fi
+
+          echo "::set-output name=value::$tier"
+
+      - name: Terraform Workspace Switch (Blue/Green)
+        if: steps.tiercheck.outputs.value != 'none'
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: terraform workspace select $(cat .tier_enabled)
+
+      - name: Terraform Plan (Blue/Green)
+        id: plan-bg
+        if: steps.tiercheck.outputs.value != 'none'
+        run: terraform plan -no-color -var-file=$(cat .tier_enabled).tfvars -out ./.plans/plan.out
+        continue-on-error: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      - name: Terraform Apply (Blue/Green)
+        id: apply-bg
+        if: steps.tiercheck.outputs.value != 'none'
+        run: terraform apply -no-color ./.plans/plan.out
+        continue-on-error: false
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Create a VERSION file to use through the build
+      - name: Set Version File
+        id: release
+        env:
+          NEXT_VERSION: "${{ steps.semvers.outputs.patch }}"
+        run: |
+          echo -n "$NEXT_VERSION" > VERSION
+          echo "::set-output name=release_version::$NEXT_VERSION"
+      # Push the changes to Git TAG before deploying anything
+      - name: Release Version
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+        run: |
+          VERSION=$(cat VERSION)
+          git config --global user.name "${{ secrets.BOT_USER }}"
+          git config --global user.email "${{ secrets.BOT_EMAIL }}"
+          git tag -fa v$VERSION -m "Environment Release v$VERSION"
+          git push origin v$VERSION
