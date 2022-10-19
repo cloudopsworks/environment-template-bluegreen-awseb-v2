@@ -6,12 +6,12 @@
 locals {
   load_balancer_log_bucket    = "${var.default_bucket_prefix}-lb-logs"
   application_versions_bucket = "${var.default_bucket_prefix}-app-versions"
+  mod_bucket_version          = "3.4.0"
 }
 
 module "versions_bucket" {
-  count   = terraform.workspace == "default" ? 1 : 0
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.0.0"
+  version = local.mod_bucket_version
 
   bucket                  = local.application_versions_bucket
   acl                     = "private"
@@ -38,6 +38,24 @@ module "versions_bucket" {
       id      = "versions-clean"
       enabled = true
 
+      transition = [
+        {
+          days          = var.artifact_transition_days
+          storage_class = "STANDARD_IA"
+        },
+        {
+          days          = var.artifact_transition_days * 2
+          storage_class = "GLACIER"
+        }
+      ]
+
+      noncurrent_transition = [
+        {
+          days          = var.artifact_transition_days * 2
+          storage_class = "GLACIER"
+        }
+      ]
+
       noncurrent_version_expiration = {
         days = var.versions_expiration_days
       }
@@ -50,9 +68,8 @@ module "versions_bucket" {
 }
 
 module "logs_bucket" {
-  count   = terraform.workspace == "default" ? 1 : 0
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.0.0"
+  version = local.mod_bucket_version
 
   bucket                         = local.load_balancer_log_bucket
   acl                            = "log-delivery-write"

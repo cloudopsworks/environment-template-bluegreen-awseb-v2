@@ -50,12 +50,19 @@ jobs:
         run: |
           tier="blue-green/new"
           
-          if [ -f .tier_enabled ] ; then
-            tier=$(cat .tier_enabled)
-
-            make switch-from-$tier
+          green_server_version="a"
+          if [ -f .bluegreen_state ] ; then
+            green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
+            if [ "$green_server_version" = "a" ] ; then
+              green_server_version="b"
+            else
+              green_server_version="a"
+            fi
+            
+            [ -f app-module-${green_server_version}.tf.deactivated ] && mv app-module-${green_server_version}.tf.deactivated app-module-${green_server_version}.tf
           fi
-          echo "::set-output name=label::$tier"
+          echo "$green_server_version" > .bluegreen_state
+          echo "label=$tier" >> $GITHUB_OUTPUT
 
       - name: Push change for release
         run: |

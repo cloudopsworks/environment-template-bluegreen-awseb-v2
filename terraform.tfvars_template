@@ -3,17 +3,105 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
-region           = "AWS REGION"
-#use_sts          = true | false
+region                   = "AWS REGION"
 sts_assume_role          = "arn:aws:iam::ACCOUNT_ID:role/GITHubActionsRunRole"
 default_bucket_prefix    = "AWS S3 BUCKET PREFIX NAME THAT WILL BE USED FOR BUCKETS IN THIS ENV (LOGS+VERSION)"
 namespace                = "IDENTIFIES THE NAMESPACE FOR THE ENVIRONMENT TEAM" 
 repository_owner         = "GITHUB TEAM OWNER"
 logs_expiration_days     = 365
 logs_archive_days        = 90
-artifact_expiration_days = 90
-versions_expiration_days = 30
-# Version Rollover Highly recommended for PROD/Staging
-#versions_rollover_number = 10
-# Version Rollover Default for DEV
-#versions_rollover_number = 1
+artifact_transition_days = 30
+artifact_expiration_days = 365
+versions_expiration_days = 365
+
+##
+# Specific values regarding the environment
+release_name         = "<RELEASE-NAME>"
+source_name          = "<CHART-NAME-ON-REPO"
+app_version_a        = "<VERSION_1>"
+app_version_b        = "<VERSION_1>"
+deployment_a_enabled = false
+deployment_b_enabled = false
+
+##
+# Elastic Beanstalk specific configurations
+#
+# Solution stack is one of:
+#   java      = "^64bit Amazon Linux 2 (.*) Corretto 8(.*)$"
+#   java11    = "^64bit Amazon Linux 2 (.*) Corretto 11(.*)$"
+#   node      = "^64bit Amazon Linux 2 (.*) Node.js 12(.*)$"
+#   node14    = "^64bit Amazon Linux 2 (.*) Node.js 14(.*)$"
+#   go        = "^64bit Amazon Linux 2 (.*) Go (.*)$"
+#   docker    = "^64bit Amazon Linux 2 (.*) Docker (.*)$"
+#   docker-m  = "^64bit Amazon Linux 2 (.*) Multi-container Docker (.*)$"
+#   java-amz1 = "^64bit Amazon Linux (.*)$ running Java 8(.*)$"
+#   node-amz1 = "^64bit Amazon Linux (.*)$ running Node.js(.*)$"
+#
+# Or the full name of the stack from AWS supported stacks in order to prevent upgrades.
+solution_stack                 = "SOLUTION_STACK"
+beanstalk_application          = "BEANSTALK APPLICATION WHERE TO BUILD"
+beanstalk_ec2_key              = "EXISITNG EC2 KEY (SSH)"
+beanstalk_ami_id               = "EXISITNG AMI TO BASE RUN or BLANK is Default"
+beanstalk_instance_port        = 8081
+beanstalk_enable_spot          = true
+beanstalk_default_retention    = 90
+beanstalk_instance_volume_size = 10
+beanstalk_instance_volume_type = "gp2"
+#beanstalk_instance_profile     = "aws-elasticbeanstalk-ec2-role"
+#beanstalk_service_role         = "aws-elasticbeanstalk-service-role"
+
+##
+# Load Balancing Configuration
+load_balancer_public             = false
+load_balancer_log_bucket         = local.load_balancer_log_bucket
+load_balancer_log_prefix         = "<RELEASE-NAME>"
+load_balancer_ssl_certificate_id = "EXISTING CERTIFICATE"
+#load_balancer_ssl_policy         = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+#load_balancer_alias              = "OVERRIDE LB ALIAS"
+
+##
+# Networking related configuration
+private_subnets = ["PRIVATE SUBNET LIST TO DEPLOY INSTANCE & APP"]
+public_subnets  = ["PUBLIC SUBNET LIST TO DEPLOY INSTANCE & APP",]
+vpc_id          = "VPC ID WHERE TO DEPLOY"
+server_types    = ["SERVER TYPES LIST THIS WILL HELP TO ALLOCATE DEPLOY",]
+
+##
+# DNS configuration
+domain_name              = "DOMAIN WHERE TO CREATE ALIAS"
+domain_name_alias_prefix = "DOMAIN NAME ALIAS"
+
+##
+# Optional variable for mapping ports to backend ports:
+#port_mappings = [
+#  {
+#    name      = "default"
+#    from_port = 80
+#    to_port   = 8081
+#    protocol  = "HTTP"
+#  },
+#  {
+#    name             = "port443"
+#    from_port        = 443
+#    to_port          = 8443
+#    protocol         = "HTTPS"
+#    backend_protocol = "HTTPS"
+#  }
+#]
+
+##
+# Optional variable for mapping extra Elastic Beanstalk configurations
+#extra_settings = [
+#  {
+#    name      = "SETTING_NAME"
+#    namespace = "aws:NAMESPACE"
+#    resource  = ""
+#    value     = "<VALUE>"
+#  }
+#  , {
+#    name      = "SETTING_NAME_2"
+#    namespace = "aws:NAMESPACE_2"
+#    resource  = ""
+#    value     = "<VALUE>"
+#  }
+#]
