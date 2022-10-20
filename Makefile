@@ -33,6 +33,7 @@ checkbluegreen:
 	@if [ ! -f .bluegreen_state ] ; then \
 		echo -n "a" > .bluegreen_state ; \
 		sed -i -e "s/deployment_a_enabled[ \t]*=.*/deployment_a_enabled = true/g" terraform.tfvars ; \
+		mv app-module-a.tf.deactivated app-module-a.tf \
 	fi
 override BLUEGREEN_STATE := $(shell head -n 1 .bluegreen_state |head -c 1)
 
