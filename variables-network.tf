@@ -40,3 +40,9 @@ variable "app_domain_alias" {
   type        = string
   description = "(required) Domain alias that will be prepended to the domain name to resolve to de app."
 }
+
+variable "app_domain_disabled" {
+  type = bool
+  default = false
+  description = "(optional) Flag to disable Domain Management for application."
+}

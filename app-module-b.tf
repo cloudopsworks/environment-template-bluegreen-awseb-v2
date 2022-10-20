@@ -9,6 +9,8 @@
 #   - This can be commented out to disable DNS management (not recommended)
 #
 module "app_dns_b" {
+  count = ! var.app_domain_disabled ? 1 : 0
+
   source          = "cloudopsworks/beanstalk-dns/aws"
   version         = "1.0.1"
   region          = var.region
