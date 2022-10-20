@@ -21,7 +21,7 @@ module "app_dns_a" {
   domain_name                 = var.app_domain_name
   domain_name_alias_prefix    = var.app_domain_alias
   domain_name_weight          = var.deployment_a_enabled ? 10 : 0
-  beanstalk_environment_cname = module.beanstalk_app_a.0.environment_cname
+  beanstalk_environment_cname = module.beanstalk_app_a.environment_cname
 }
 
 module "app_version_a" {
@@ -55,7 +55,7 @@ module "beanstalk_app_a" {
   release_name              = var.release_name
   namespace                 = format("%s-%s", var.namespace, "a")
   solution_stack            = var.solution_stack
-  application_version_label = module.app_version_a.0.application_version_label
+  application_version_label = module.app_version_a.application_version_label
 
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets

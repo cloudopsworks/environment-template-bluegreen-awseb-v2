@@ -15,10 +15,11 @@ DESTROYFOUND := $(shell [ -f .destroy ] && echo 1 || echo 0)
 DATE :=	$(shell date +%Y%m%d-%H%M%S.%s)
 BLUEGREEN_STATE :=
 
+.PHONY: init
+.PHONY: checkbluegreen
 .PHONY: VERSION
 .PHONY: version
 .PHONY: module.tf
-.PHONY: checkbluegreen
 
 
 module.tf:
@@ -31,11 +32,13 @@ module.tf:
 
 checkbluegreen:
 	@if [ ! -f .bluegreen_state ] ; then \
-		echo -n "a" > .bluegreen_state ; \
+		echo "a" > .bluegreen_state ; \
 		sed -i -e "s/deployment_a_enabled[ \t]*=.*/deployment_a_enabled = true/g" terraform.tfvars ; \
-		mv app-module-a.tf.deactivated app-module-a.tf \
+		mv app-module-a.tf.deactivated app-module-a.tf ; \
 	fi
+ifneq ("$(wildcard .bluegreen_state)","")
 override BLUEGREEN_STATE := $(shell head -n 1 .bluegreen_state |head -c 1)
+endif
 
 version: VERSION checkbluegreen module.tf 
 ifeq ($(OS),Darwin)

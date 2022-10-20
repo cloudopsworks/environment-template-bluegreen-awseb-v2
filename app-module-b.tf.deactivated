@@ -21,7 +21,7 @@ module "app_dns_b" {
   domain_name                 = var.app_domain_name
   domain_name_alias_prefix    = var.app_domain_alias
   domain_name_weight          = var.deployment_b_enabled ? 10 : 0
-  beanstalk_environment_cname = module.beanstalk_app_b.0.environment_cname
+  beanstalk_environment_cname = module.beanstalk_app_b.environment_cname
 }
 
 module "app_version_b" {
@@ -55,7 +55,7 @@ module "beanstalk_app_b" {
   release_name              = var.release_name
   namespace                 = format("%s-%s", var.namespace, "b")
   solution_stack            = var.solution_stack
-  application_version_label = module.app_version_b.0.application_version_label
+  application_version_label = module.app_version_b.application_version_label
 
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
@@ -79,7 +79,7 @@ module "beanstalk_app_b" {
   load_balancer_log_prefix         = "${var.release_name}-b"
   load_balancer_ssl_certificate_id = var.load_balancer_ssl_certificate_id
   load_balancer_ssl_policy         = var.load_balancer_ssl_policy
-  load_balancer_alias              = "${var.load_balancer_alias}-b"
+  load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "b") : format("%s-%s", var.load_balancer_alias, "b")
 
   port_mappings  = var.beasntalk_port_mappings
   extra_settings = var.extra_settings
