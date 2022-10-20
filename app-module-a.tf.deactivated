@@ -79,7 +79,7 @@ module "beanstalk_app_a" {
   load_balancer_log_prefix         = "${var.release_name}-a"
   load_balancer_ssl_certificate_id = var.load_balancer_ssl_certificate_id
   load_balancer_ssl_policy         = var.load_balancer_ssl_policy
-  load_balancer_alias              = "${var.load_balancer_alias}-a"
+  load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "a") : format("%s-%s", var.load_balancer_alias, "a")
 
   port_mappings  = var.beasntalk_port_mappings
   extra_settings = var.extra_settings
