@@ -54,7 +54,6 @@ beanstalk_instance_volume_type = "gp2"
 # Load Balancing Configuration
 load_balancer_public             = false
 load_balancer_log_bucket         = local.load_balancer_log_bucket
-load_balancer_log_prefix         = "<RELEASE-NAME>"
 load_balancer_ssl_certificate_id = "EXISTING CERTIFICATE"
 #load_balancer_ssl_policy         = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 #load_balancer_alias              = "OVERRIDE LB ALIAS"
