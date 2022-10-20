@@ -6,12 +6,11 @@
 locals {
   load_balancer_log_bucket    = "${var.default_bucket_prefix}-lb-logs"
   application_versions_bucket = "${var.default_bucket_prefix}-app-versions"
-  mod_bucket_version          = "3.4.0"
 }
 
 module "versions_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = local.mod_bucket_version
+  version = "3.4.0"
 
   bucket                  = local.application_versions_bucket
   acl                     = "private"
@@ -69,7 +68,7 @@ module "versions_bucket" {
 
 module "logs_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = local.mod_bucket_version
+  version = "3.4.0"
 
   bucket                         = local.load_balancer_log_bucket
   acl                            = "log-delivery-write"

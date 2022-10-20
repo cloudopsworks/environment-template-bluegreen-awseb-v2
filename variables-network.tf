@@ -42,7 +42,7 @@ variable "app_domain_alias" {
 }
 
 variable "app_domain_disabled" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "(optional) Flag to disable Domain Management for application."
 }
