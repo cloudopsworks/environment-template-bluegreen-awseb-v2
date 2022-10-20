@@ -60,7 +60,7 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
 
       # Install terraform tools
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.1.7
 
@@ -175,7 +175,7 @@ jobs:
           token: ${{ secrets.BOT_TOKEN }}
 
       # Install Terraform
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.1.7
 
@@ -312,7 +312,7 @@ jobs:
           ref: master
 
       # Install Terraform
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.1.7
 
@@ -569,7 +569,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Install terraform
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.1.7
 
@@ -689,7 +689,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Install terraform
-      - uses: hashicorp/setup-terraform@v1
+      - uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.1.7
 
