@@ -58,46 +58,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
           GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
 
-      - name: Check Workspaces
-        id: workspace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          terraform workspace list
-
-      - name: Create Workspace BLUE
-        id: blue-workspace
-        if: ${{ ! contains(steps.workspace.outputs.stdout, 'blue') }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          terraform workspace new blue
-
-      - name: Create Workspace GREEN
-        id: green-workspace
-        if: ${{ ! contains(steps.workspace.outputs.stdout, 'green') }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          terraform workspace new green
-
-      - name: Terraform default Workspace Switch
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: terraform workspace select default
-
       - name: Create Plan Directory
         run: mkdir -p ./.plans
 
-      - name: Terraform Plan Default Workspace
+      - name: Terraform Plan
         id: plan
         run: |
           terraform plan -no-color -out ./.plans/plan.out
@@ -110,54 +74,10 @@ jobs:
           HELM_EXPERIMENTAL_OCI: "1"
           GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
 
-      - name: Terraform Apply Default Workspace
+      - name: Terraform Apply
         id: apply
         run: |
           terraform apply -no-color ./.plans/plan.out
-        continue-on-error: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
-          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
-          HELM_EXPERIMENTAL_OCI: "1"
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      - name: Tier check
-        id: tiercheck
-        run: |
-          tier=none
-          if [ -f .tier_enabled ] ; then
-            tier=$(cat .tier_enabled)
-          fi
-
-          echo "value=$tier" >> $GITHUB_OUTPUT
-
-      - name: Terraform Workspace Switch (Blue/Green)
-        if: steps.tiercheck.outputs.value != 'none'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: terraform workspace select $(cat .tier_enabled)
-
-      - name: Terraform Plan (Blue/Green)
-        id: plan-bg
-        if: steps.tiercheck.outputs.value != 'none'
-        run: terraform plan -no-color -var-file=$(cat .tier_enabled).tfvars -out ./.plans/plan.out
-        continue-on-error: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
-          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
-          HELM_EXPERIMENTAL_OCI: "1"
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      - name: Terraform Apply (Blue/Green)
-        id: apply-bg
-        if: steps.tiercheck.outputs.value != 'none'
-        run: terraform apply -no-color ./.plans/plan.out
         continue-on-error: false
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
