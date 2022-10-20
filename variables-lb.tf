@@ -24,6 +24,5 @@ variable "load_balancer_ssl_policy" {
 
 variable "load_balancer_alias" {
   type        = string
-  default     = var.release_name
   description = "(required) Required load balancer alias,"
 }
