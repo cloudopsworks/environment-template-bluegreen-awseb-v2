@@ -24,5 +24,6 @@ variable "load_balancer_ssl_policy" {
 
 variable "load_balancer_alias" {
   type        = string
-  description = "(required) Required load balancer alias,"
+  default     = ""
+  description = "(optional) Required load balancer alias,"
 }
