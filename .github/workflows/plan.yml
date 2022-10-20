@@ -62,7 +62,7 @@ jobs:
       # Install terraform tools
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.1.7
+          terraform_version: 1.3.3
 
       # Automatic environment checking from OWNERS file
       # usually this is not automatic for blue-green envs
@@ -177,7 +177,7 @@ jobs:
       # Install Terraform
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.1.7
+          terraform_version: 1.3.3
 
       # Run Terraform Init, as we start on clean workspace
       - name: Terraform Init
@@ -314,7 +314,7 @@ jobs:
       # Install Terraform
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.1.7
+          terraform_version: 1.3.3
 
       # Working on Master will be .tier_enabled
       - name: Blue Green Deployment destroy check
@@ -571,7 +571,7 @@ jobs:
       # Install terraform
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.1.7
+          terraform_version: 1.3.3
 
       # Get pull request base
       - name: Get Pull Request BASE Ref
@@ -691,7 +691,7 @@ jobs:
       # Install terraform
       - uses: hashicorp/setup-terraform@v2
         with:
-          terraform_version: 1.1.7
+          terraform_version: 1.3.3
 
       # Get pull request head
       - name: Get Pull Request HEAD Ref
