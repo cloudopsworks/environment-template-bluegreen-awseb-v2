@@ -96,46 +96,12 @@ jobs:
         run: terraform validate -no-color
         continue-on-error: true
 
-      # Check Terraform Workspaces are in place
-      - name: Check Workspaces
-        id: workspace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          terraform workspace list
-
-      # Creation of BLUE tier Terraform workspace if not already exists
-      - name: Create Workspace BLUE
-        id: blue-workspace
-        if: ${{ ! contains(steps.workspace.outputs.stdout, 'blue') }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          terraform workspace new blue
-
-      # Creation of GREEN tier Terraform workspace if not already exists
-      - name: Create Workspace GREEN
-        id: green-workspace
-        if: ${{ ! contains(steps.workspace.outputs.stdout, 'green') }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: |
-          terraform workspace new green
-
       - name: Blue Green Deployment staging check
         id: bluegreen
         run: |
-          label=$(cat .tier_enabled)
-          action=$(cat .beacon | head -1)
+          label=$(cat .bluegreen_state)
           nextlabel="blue-green/$label"
 
-          echo "action_plan=${action}" >> $GITHUB_OUTPUT
           echo "nextlabel=${nextlabel}" >> $GITHUB_OUTPUT
           echo "label=${label}" >> $GITHUB_OUTPUT
 
@@ -145,8 +111,7 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            const output = `#### Action Step: \`${{ steps.bluegreen.outputs.action_plan }}\`
-            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outputs.stdout }}\`
             
@@ -188,21 +153,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
           GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
 
-      # Switch the workspace to the one should perform in the PR
-      - name: Terraform Workspace Switch
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: terraform workspace select ${{ needs.plan.outputs.bluegreen_label }}
-
       - name: Create Plan Directory
         run: mkdir -p ./.plans
 
       # Run Terraform Plan to validate all changes
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -var-file=$(cat .tier_enabled).tfvars -out ./.plans/plan.out
+        run: terraform plan -no-color -out ./.plans/plan.out
         continue-on-error: ${{ needs.plan.outputs.auto_approve != 'true' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
@@ -220,8 +177,7 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            const output = `#### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
             
             <details><summary>Show Plan</summary>
@@ -595,16 +551,6 @@ jobs:
           ref: ${{ steps.the_pull.outputs.result }}
           token: ${{ secrets.BOT_TOKEN }}
 
-      - name: Retrieve tier to run
-        id: tier_to_run
-        run: |
-          tier=
-
-          if [ -f .tier_enabled ] ; then
-            tier=$(cat .tier_enabled) 
-          fi
-          echo "tier=$tier" >> $GITHUB_OUTPUT
-
       - name: Terraform Init
         id: init
         run: terraform init
@@ -615,17 +561,11 @@ jobs:
 
       - name: Create Plan Directory
         run: mkdir -p ./.plans
-      - name: Terraform Select Master Workspace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: terraform workspace select ${{ steps.tier_to_run.outputs.tier }}
 
       - name: Terraform Plan on Master Rollback Traffic
         id: plan
         if: steps.tier_to_run.outputs.tier != ''
-        run: terraform plan -no-color -var-file=${{ steps.tier_to_run.outputs.tier }}.tfvars -out ./.plans/plan.out
+        run: terraform plan -no-color -out ./.plans/plan.out
         continue-on-error: false
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
@@ -680,129 +620,6 @@ jobs:
               body: output
             });
 
-  # Perform Rollback on PR HEAD as a Rollback was requested
-  rollback-on-branch:
-    needs:
-      - plan
-      - rollback-on-master
-    if: needs.plan.outputs.bluegreen_action == 'rollback'
-    runs-on: ubuntu-latest
-    steps:
-      # Install terraform
-      - uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.3.3
-
-      # Get pull request head
-      - name: Get Pull Request HEAD Ref
-        uses: actions/github-script@v4
-        id: the_pull
-        with:
-          github-token: ${{secrets.BOT_TOKEN}}
-          result-encoding: string
-          script: |
-            const {data: thePull} = await github.pulls.get({
-              pull_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-            return thePull.head.ref;
-
-      # Proceed with checkout of source with all the references (depth=0)  
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-          ref: ${{ steps.the_pull.outputs.result }}
-          token: ${{ secrets.BOT_TOKEN }}
-
-      - name: Retrieve tier to run
-        id: tier_to_run
-        run: |
-          tier=
-
-          if [ -f .tier_enabled ] ; then
-            tier=$(cat .tier_enabled) 
-          fi
-          echo "tier=$tier" >> $GITHUB_OUTPUT
-
-      - name: Terraform Init
-        id: init
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      - name: Rollback Changes for apply afterwards
-        run: make rollback
-      
-      - name: Create Plan Directory
-        run: mkdir -p ./.plans
-      - name: Terraform Select Master Workspace
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: terraform workspace select ${{ steps.tier_to_run.outputs.tier }}
-
-      - name: Terraform Plan on Master Rollback Traffic
-        id: plan
-        if: steps.tier_to_run.outputs.tier != ''
-        run: terraform plan -no-color -var-file=${{ steps.tier_to_run.outputs.tier }}.tfvars -out ./.plans/plan.out
-        continue-on-error: false
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
-          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
-          HELM_EXPERIMENTAL_OCI: "1"
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      - name: Terraform Apply on Master Workspace
-        id: apply
-        if: steps.tier_to_run.outputs.tier != ''
-        run: terraform apply -no-color ./.plans/plan.out
-        continue-on-error: true
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
-          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
-          HELM_EXPERIMENTAL_OCI: "1"
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      - name: Report terraform apply output
-        uses: actions/github-script@v4
-        env:
-          PLAN: "terraform plan ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.plan.outputs.stdout }}"
-          APPLY: "terraform apply ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.apply.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.BOT_TOKEN }}
-          script: |
-            const output = `### Rollback result on Branch
-            #### Terraform Plan ${{ steps.tier_to_run.outputs.tier }}📖\`${{ steps.plan.outcome }}\`
-            #### Terraform Apply ${{ steps.tier_to_run.outputs.tier }}📖\`${{ steps.apply.outcome }}\`
-            <details><summary>Show plan/apply report</summary>
-            
-            \`\`\`\n
-            ${process.env.PLAN}
-            ---\n
-            ${process.env.APPLY}
-            \`\`\`
-            
-            </details>
-
-            Rollback Complete Pull request may be closed!
-            
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-              
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            });
-
   # Close PR on Rollback condition
   #   this closes the PR without merging into target branch
   close-pull:
@@ -810,7 +627,6 @@ jobs:
     needs:
       - plan
       - rollback-on-master
-      - rollback-on-branch
     if: needs.plan.outputs.bluegreen_action == 'rollback'
     steps:
       - name: Closes the Pull Request
