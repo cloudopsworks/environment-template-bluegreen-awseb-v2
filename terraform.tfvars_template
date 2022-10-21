@@ -73,7 +73,7 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 
 ##
 # Optional variable for mapping ports to backend ports:
-#beasntalk_port_mappings = [
+#beanstalk_port_mappings = [
 #  {
 #    name      = "default"
 #    from_port = 80

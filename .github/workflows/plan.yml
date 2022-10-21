@@ -111,7 +111,8 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            const output = `#### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
+            const output = `## Environment Terraform Linting, Initialization & Validation
+            #### Terraform Format and Style 🖌\`${{ steps.fmt.outcome }}\`
             #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
             #### Terraform Validation 🤖\`${{ steps.validate.outputs.stdout }}\`
             
@@ -177,7 +178,7 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            const output = `#### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
+            const output = `## Environment Plan Validation
             #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
             
             <details><summary>Show Plan</summary>
@@ -220,7 +221,6 @@ jobs:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const output = `## Changes reconciled on New Environment
-            #### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
             #### Terraform Apply 📖\`${{ steps.apply.outcome }}\`
             <details><summary>Show plan/apply report</summary>
             
