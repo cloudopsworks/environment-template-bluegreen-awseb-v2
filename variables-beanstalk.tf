@@ -63,7 +63,7 @@ variable "beanstalk_service_role" {
   default     = null
 }
 
-variable "beasntalk_port_mappings" {
+variable "beanstalk_port_mappings" {
   type        = list(any)
   default     = []
   description = <<EOF
