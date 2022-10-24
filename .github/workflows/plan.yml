@@ -99,8 +99,8 @@ jobs:
       - name: Blue Green Deployment staging check
         id: bluegreen
         run: |
-          label=$(cat .bluegreen_state | head -n 1 )
-          plan=$(cat .action_plan | head -n 1x
+          label=$(cat .bluegreen_state | head -n 1)
+          plan=$(cat .action_plan | head -n 1)
           nextlabel="blue-green/$label"
 
           echo "nextlabel=${nextlabel}" >> $GITHUB_OUTPUT
