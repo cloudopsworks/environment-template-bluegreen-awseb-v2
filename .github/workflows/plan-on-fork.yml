@@ -63,7 +63,7 @@ jobs:
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -96,14 +96,14 @@ jobs:
               }
             }
 
-            github.pulls.requestReviewers({
+            github.rest.pulls.requestReviewers({
               pull_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               reviewers: reviewers
             });
 
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -111,7 +111,7 @@ jobs:
             });
 
             if( !ref.startsWith('promote-') ) {
-              github.issues.addLabels({
+              github.rest.issues.addLabels({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,

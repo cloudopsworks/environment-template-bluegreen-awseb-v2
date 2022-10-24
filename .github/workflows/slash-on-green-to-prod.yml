@@ -32,7 +32,7 @@ jobs:
           result-encoding: string
           script: |
             const pull_request_number = '${{ github.event.client_payload.slash_command.args.named.pull_request_number }}';
-            const {data: thePull} = await github.pulls.get({
+            const {data: thePull} = await github.rest.pulls.get({
               pull_number: pull_request_number,
               owner: context.repo.owner,
               repo: context.repo.repo
@@ -77,7 +77,7 @@ jobs:
           script: |
             const pull_request_number = '${{ github.event.client_payload.slash_command.args.named.pull_request_number }}';
             
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: pull_request_number,
               owner: context.repo.owner,
               repo: context.repo.repo,

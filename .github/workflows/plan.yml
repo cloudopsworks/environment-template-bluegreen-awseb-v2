@@ -120,7 +120,7 @@ jobs:
             
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -193,7 +193,7 @@ jobs:
             
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -236,7 +236,7 @@ jobs:
             
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -256,7 +256,7 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -274,7 +274,7 @@ jobs:
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -322,14 +322,14 @@ jobs:
               }
             }
 
-            github.pulls.requestReviewers({
+            github.rest.pulls.requestReviewers({
               pull_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               reviewers: reviewers
             });
 
-            github.issues.addLabels({
+            github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -354,7 +354,7 @@ jobs:
           github-token: ${{secrets.BOT_TOKEN}}
           result-encoding: string
           script: |
-            const {data: pullLabels} = await github.issues.listLabelsOnIssue({
+            const {data: pullLabels} = await github.rest.issues.listLabelsOnIssue({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo
@@ -371,7 +371,7 @@ jobs:
             }
 
             if ( ! is_mergeable ) {
-              github.issues.addLabels({
+              github.rest.issues.addLabels({
                 issue_number: context.issue.number,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
@@ -401,7 +401,7 @@ jobs:
           github-token: ${{secrets.BOT_TOKEN}}
           result-encoding: string
           script: |
-            const {data: thePull} = await github.pulls.get({
+            const {data: thePull} = await github.rest.pulls.get({
               pull_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo
@@ -475,7 +475,7 @@ jobs:
             
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
-            github.issues.createComment({
+            github.rest.issues.createComment({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -496,13 +496,13 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
-            const {data: thePull} = await github.pulls.get({
+            const {data: thePull} = await github.rest.pulls.get({
               pull_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
             })
 
-            github.pulls.update({
+            github.rest.pulls.update({
               pull_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
