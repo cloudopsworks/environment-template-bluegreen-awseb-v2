@@ -7,10 +7,10 @@ name: Slash command on Green To Prod
 on:
   repository_dispatch:
     types:
-      green-to-prod-command
-      ok-to-prod-command
-      to-prod-command
-      apply-prod-command
+      - green-to-prod-command
+      - ok-to-prod-command
+      - to-prod-command
+      - apply-prod-command
 
 permissions:
   issues: write
