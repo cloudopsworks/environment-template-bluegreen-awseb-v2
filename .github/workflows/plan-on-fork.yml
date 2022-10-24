@@ -58,7 +58,7 @@ jobs:
           fi
           echo "autoapprove=$is_auto" >> $GITHUB_OUTPUT
 
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         if: ${{ steps.check_automatic.outputs.autoapprove == 'true' }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -79,7 +79,7 @@ jobs:
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "as_json=$reviewers_as_json" >> $GITHUB_OUTPUT
 
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         if: ${{ steps.check_automatic.outputs.autoapprove != 'true' }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}

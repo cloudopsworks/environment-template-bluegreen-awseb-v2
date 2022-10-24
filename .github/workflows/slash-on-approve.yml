@@ -26,7 +26,7 @@ jobs:
     steps:
       # Get pull request head
       - name: Get Pull Request HEAD Ref
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         id: the_pull
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -52,7 +52,7 @@ jobs:
         with:
           terraform_version: 1.3.3
 
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         id: approval
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -97,7 +97,7 @@ jobs:
             var proceed_with_users = false;
 
             for (const aLabel of labels) {
-              if ( aLabel == 'blue-green/new' || aLabel == 'blue-green/completed' || aLabel == 'merge-allowed') {
+              if ( aLabel == 'blue-green/new' || aLabel == 'blue-green/promoted' || aLabel == 'merge-allowed') {
                 proceed_with_users = true;
               }
             }
@@ -184,7 +184,7 @@ jobs:
           git push origin
 
       - name: Label entry at proper step
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |

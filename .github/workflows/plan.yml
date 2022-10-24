@@ -109,7 +109,7 @@ jobs:
 
       # Report as PR comment the output of validations
       - name: Report Validations Output
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -174,7 +174,7 @@ jobs:
 
       # Report the plan output to PR as new Comment
       - name: Report Plan Output
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         env:
           PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
         with:
@@ -216,7 +216,7 @@ jobs:
 
       # Report the apply output to the PR as new comment
       - name: Report terraform apply output
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         env:
           APPLY: "terraform apply\n${{ steps.apply.outputs.stdout }}"
         with:
@@ -246,14 +246,14 @@ jobs:
       # Fail the workflow if the plan or apply was not success
       - name: Fail the workflow
         if: ${{ steps.plan.outcome != 'success' || steps.apply.outcome != 'success' }}
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         with:
           script: |
             core.setFailed('Plan or Apply for Deploy was not successful!')
 
       # Label step as deployed
       - name: Label PR step as deployed
-        uses: actions/github-script@v3
+        uses: actions/github-script@v6
         with:
           script: |
             github.issues.addLabels({
@@ -270,7 +270,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.plan.outputs.auto_approve == 'true' }}
     steps:
-      - uses: actions/github-script@v4
+      - uses: actions/github-script@v6
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
@@ -301,7 +301,7 @@ jobs:
           echo "as_json=$reviewers_as_json" >> $GITHUB_OUTPUT
 
       - name: Add review and approval labels
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
@@ -349,7 +349,7 @@ jobs:
     steps:
       - name: Set DO-NOT-MERGE if not in last step
         id: check
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           result-encoding: string
@@ -395,7 +395,7 @@ jobs:
 
       # Get pull request base
       - name: Get Pull Request BASE Ref
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         id: the_pull
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -451,7 +451,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
 
       - name: Report terraform apply output
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         env:
           PLAN: "terraform plan\n${{ steps.plan.outputs.stdout }}"
           APPLY: "terraform apply\n${{ steps.apply.outputs.stdout }}"
@@ -492,7 +492,7 @@ jobs:
     if: needs.plan.outputs.bluegreen_action == 'rollback'
     steps:
       - name: Closes the Pull Request
-        uses: actions/github-script@v4
+        uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
