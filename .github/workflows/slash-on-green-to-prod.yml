@@ -7,7 +7,10 @@ name: Slash command on Approve/LGTM
 on:
   repository_dispatch:
     types:
-      - open-new-command
+      green-to-prod-command
+      ok-to-prod-command
+      to-prod-command
+      apply-prod-command
 
 permissions:
   issues: write
@@ -17,7 +20,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  open-new-traffic:
+  force-trafic-switch:
     runs-on: ubuntu-latest
     steps:
       # Get pull request head
@@ -43,15 +46,28 @@ jobs:
           ref: ${{ steps.the_pull.outputs.result }}
           token: ${{ secrets.BOT_TOKEN }}
 
-      - name: Open new Traffic Script
-        run: make open-new-traffic
+      # Installs Terraform
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.3
+
+      # Replacement on terraform.tfvars the switch value for the env
+      - name: Proceed to switch to new environment
+        run: |
+          green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
+          sed -i -e "s/deployment_enabled[ \t]*=.*/deployment_enabled = \"${green_server_version}\"/g" terraform.tfvars
+          echo "green_to_prod" > .action_plan
+
+      # Do Tidy on terraform Files
+      - name: Terraform tidy up
+        run: terraform fmt
 
       - name: Push change to branch
         run: |
           git add .
           git config --global user.name "${{ secrets.BOT_USER }}"
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
-          git commit -a -m "chore: Pushing changes for opening new version's traffic."
+          git commit -a -m "chore: Pushing changes promotion of green environment to prod."
           git push origin
 
       - name: Label entry at proper step
@@ -60,18 +76,10 @@ jobs:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
             const pull_request_number = '${{ github.event.client_payload.slash_command.args.named.pull_request_number }}';
-
-            const {data: pullLabels} = await github.issues.listLabelsOnIssue({
-              issue_number: pull_request_number,
-              owner: context.repo.owner,
-              repo: context.repo.repo
-            });
-
-            const labels = pullLabels.map(label => label.name);
-
+            
             github.issues.addLabels({
               issue_number: pull_request_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: [ 'new-traffic/open' ]
+              labels: [ 'blue-green/promoted' ]
             });

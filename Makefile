@@ -33,7 +33,7 @@ module.tf:
 checkbluegreen:
 	@if [ ! -f .bluegreen_state ] ; then \
 		echo "a" > .bluegreen_state ; \
-		sed -i -e "s/deployment_a_enabled[ \t]*=.*/deployment_a_enabled = true/g" terraform.tfvars ; \
+		sed -i -e "s/deployment_enabled[ \t]*=.*/deployment_enabled = \"a\"/g" terraform.tfvars ; \
 		mv app-module-a.tf.deactivated app-module-a.tf ; \
 	fi
 ifneq ("$(wildcard .bluegreen_state)","")

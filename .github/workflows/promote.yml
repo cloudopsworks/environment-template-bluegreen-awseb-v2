@@ -59,7 +59,9 @@ jobs:
             fi
             [ -f app-module-${green_server_version}.tf.deactivated ] && mv app-module-${green_server_version}.tf.deactivated app-module-${green_server_version}.tf
             echo "$green_server_version" > .bluegreen_state
-          fi        
+            tier="$blue-green/$green_server_version"
+          fi
+          echo "launch_green" >> .action_plan
           echo "label=$tier" >> $GITHUB_OUTPUT
 
       - name: Push change for release

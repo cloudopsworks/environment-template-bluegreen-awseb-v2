@@ -36,9 +36,10 @@ jobs:
             close
             rollback
             retry
-            open-new
-            close-old
-            force-switch
+            green-to-prod
+            ok-to-prod
+            to-prod
+            apply-prod
           static-args: |
             author=${{ github.actor }}
             pull_request=true

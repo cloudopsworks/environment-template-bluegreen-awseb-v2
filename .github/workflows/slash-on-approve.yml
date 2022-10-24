@@ -135,3 +135,53 @@ jobs:
             } else {
               return 'next'
             }
+
+      - name: Decommission blue
+        if: ${{ steps.approval.outputs.result == 'approved }}
+        run: |
+          echo "approve_and_decommission_blue" > .action_plan
+          green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
+          blue_server_version=a
+          if [ $green_server_version = $blue_server_version ]; then
+            blue_server_version="b"
+          fi
+          mv app-module-${blue_server_version}.tf app-module-${blue_server_version}.tf.deactivated
+
+      - name: Push change to branch
+        run: |
+          git add .
+          git config --global user.name "${{ secrets.BOT_USER }}"
+          git config --global user.email "${{ secrets.BOT_EMAIL }}"
+          git commit -a -m "chore: Pushing changes promotion of green environment to prod."
+          git push origin
+
+      - name: Label entry at proper step
+        uses: actions/github-script@v4
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          script: |
+            const pull_request_number = '${{ github.event.client_payload.slash_command.args.named.pull_request_number }}';
+
+            const {data: pullLabels} = await github.issues.listLabelsOnIssue({
+              issue_number: pull_request_number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const labels = pullLabels.map(label => label.name);
+
+            if( labels.filter(aLabel => aLabel == 'do-not-merge').length == 1 ) {
+              github.issues.removeLabel({
+                issue_number: pull_request_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'do-not-merge'
+              });
+            }
+
+            github.issues.addLabels({
+              issue_number: pull_request_number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: [ 'blue-green/decommission-blue' ]
+            });

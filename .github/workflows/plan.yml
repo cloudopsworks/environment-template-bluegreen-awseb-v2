@@ -99,11 +99,13 @@ jobs:
       - name: Blue Green Deployment staging check
         id: bluegreen
         run: |
-          label=$(cat .bluegreen_state)
+          label=$(cat .bluegreen_state | head -n 1 )
+          plan=$(cat .action_plan | head -n 1x
           nextlabel="blue-green/$label"
 
           echo "nextlabel=${nextlabel}" >> $GITHUB_OUTPUT
           echo "label=${label}" >> $GITHUB_OUTPUT
+          echo "action_plan=${plan}" >> $GITHUB_OUTPUT
 
       # Report as PR comment the output of validations
       - name: Report Validations Output
@@ -248,156 +250,18 @@ jobs:
         with:
           script: |
             core.setFailed('Plan or Apply for Deploy was not successful!')
-  
-  # Disable old Job
-  #   Disables the old environment based on the blue_green_action
-  #   It runs on master branch in order to maintain consistency everything but the DNS
-  #   As it runs on Master a makefile "make close-traffic" should be made in order to perform
-  #   the DNS change properly
-  disable-old:
-    runs-on: ubuntu-latest
-    needs:
-      - plan
-      - deploy
-    if: needs.plan.outputs.bluegreen_action == 'close_old'
-    steps:
-      # Checkout of master branch
-      - uses: actions/checkout@v2
-        with:
-          token: ${{ secrets.BOT_TOKEN }}
-          ref: master
 
-      # Install Terraform
-      - uses: hashicorp/setup-terraform@v2
-        with:
-          terraform_version: 1.3.3
-
-      # Working on Master will be .tier_enabled
-      - name: Blue Green Deployment destroy check
-        id: destroy
-        run: |
-          label=$(cat .tier_enabled)
-
-          echo "label=${label}" >> $GITHUB_OUTPUT
-
-      # Will force a make close-traffic on current
-      - name: Close Traffic on master
-        run: make close-traffic
-
-      # Run Terraform Init, as we start on clean workspace
-      - name: Terraform Init
-        id: init
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      # Switch the workspace to the one should perform in the PR
-      - name: Terraform Workspace Switch
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-        run: terraform workspace select ${{ steps.destroy.outputs.label }}
-
-      - name: Create Plan Directory
-        run: mkdir -p ./.plans
-
-      # Run Terraform plan to validate all changes
-      - name: Terraform Plan
-        id: plan
-        run: terraform plan -no-color -var-file=${RUN_LABEL}.tfvars -out ./.plans/plan.out
-        continue-on-error: ${{ needs.plan.outputs.auto_approve != 'true' }}
-        env:
-          RUN_LABEL: ${{ steps.destroy.outputs.label }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
-          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
-          HELM_EXPERIMENTAL_OCI: "1"
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      # Print Plan Output to PR as comment
-      - name: Report Plan Output
-        uses: actions/github-script@v4
-        env:
-          PLAN: "terraform\n${{ steps.plan.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.BOT_TOKEN }}
-          script: |
-            const output = `#### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
-            #### Terraform Initialization ⚙️\`${{ steps.init.outcome }}\`
-            #### Terraform Plan 📖\`${{ steps.plan.outcome }}\`
-            
-            <details><summary>Show Plan</summary>
-            
-            \`\`\`\n
-            ${process.env.PLAN}
-            \`\`\`
-            
-            </details>
-            
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-              
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-      
-      # Run terraform apply with saved plan in workspace
-      - name: Terraform Apply
-        id: apply
-        if: steps.plan.outcome == 'success'
-        run: terraform apply -no-color ./.plans/plan.out
-        continue-on-error: true
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
-          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
-          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
-          HELM_EXPERIMENTAL_OCI: "1"
-          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
-
-      # Print Terraform apply Output as comment to PR
-      - name: Report terraform apply output
-        uses: actions/github-script@v4
-        env:
-          APPLY: "terraform apply\n${{ steps.apply.outputs.stdout }}"
-        with:
-          github-token: ${{ secrets.BOT_TOKEN }}
-          script: |
-            const output = `## Changes reconciled on Old Environment
-            #### Action Step: \`${{ needs.plan.outputs.bluegreen_action }}\`
-            #### Terraform Apply 📖\`${{ steps.apply.outcome }}\`
-            <details><summary>Show plan/apply report</summary>
-            
-            \`\`\`\n
-            ${process.env.APPLY}
-            \`\`\`
-            
-            </details>
-
-            Submit: */approve | /approved | /lgtm* in order to continue with next step of Blue/Green Deployment.
-            
-            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
-              
-            github.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: output
-            })
-
-      # Fail the workflow if the plan or apply was not success
-      - name: Fail the workflow
-        if: ${{ steps.plan.outcome != 'success' || steps.apply.outcome != 'success' }}
+      # Label step as deployed
+      - name: Label PR step as deployed
         uses: actions/github-script@v3
         with:
           script: |
-            core.setFailed('Plan or Apply for Deploy was not successful!')
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['${{ steps.bluegreen.outputs.label }}/deployed']
+            })
 
   # Proceed with labeling if the procedure is candidate to be autoapproved
   label_autoapprove:
@@ -564,7 +428,6 @@ jobs:
 
       - name: Terraform Plan on Master Rollback Traffic
         id: plan
-        if: steps.tier_to_run.outputs.tier != ''
         run: terraform plan -no-color -out ./.plans/plan.out
         continue-on-error: false
         env:
@@ -577,7 +440,6 @@ jobs:
 
       - name: Terraform Apply on Master Workspace
         id: apply
-        if: steps.tier_to_run.outputs.tier != ''
         run: terraform apply -no-color ./.plans/plan.out
         continue-on-error: true
         env:
@@ -591,8 +453,8 @@ jobs:
       - name: Report terraform apply output
         uses: actions/github-script@v4
         env:
-          PLAN: "terraform plan ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.plan.outputs.stdout }}"
-          APPLY: "terraform apply ${{ steps.tier_to_run.outputs.tier }}\n${{ steps.apply.outputs.stdout }}"
+          PLAN: "terraform plan\n${{ steps.plan.outputs.stdout }}"
+          APPLY: "terraform apply\n${{ steps.apply.outputs.stdout }}"
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |

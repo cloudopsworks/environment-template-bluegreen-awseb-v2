@@ -20,7 +20,7 @@ module "app_dns_a" {
   namespace                   = format("%s-%s", var.namespace, "a")
   domain_name                 = var.app_domain_name
   domain_name_alias_prefix    = var.app_domain_alias
-  domain_name_weight          = var.deployment_a_enabled ? 10 : 0
+  domain_name_weight          = var.deployment_enabled == "a" ? 10 : 0
   beanstalk_environment_cname = module.beanstalk_app_a.environment_cname
 }
 

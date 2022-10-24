@@ -46,8 +46,9 @@ jobs:
           ref: ${{ steps.the_pull.outputs.result }}
           token: ${{ secrets.BOT_TOKEN }}
 
-      - name: Open new Traffic Script
-        run: make rollback
+      - name: Rollback everything
+        run: |
+          echo "rollback" > .action_plan
 
       - name: Push change to branch
         run: |

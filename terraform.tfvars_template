@@ -20,8 +20,7 @@ release_name         = "<RELEASE-NAME>"
 source_name          = "<CHART-NAME-ON-REPO"
 app_version_a        = "<VERSION_1>"
 app_version_b        = "<VERSION_1>"
-deployment_a_enabled = false
-deployment_b_enabled = false
+deployment_enabled   = "<a or b>"
 
 ##
 # Elastic Beanstalk specific configurations

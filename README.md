@@ -3,8 +3,8 @@ Environment Template for AWS ElasticBeanstalk based apps with Blue-Green strateg
 
 ## Flow:
 ```
-/promote (from app repos) --> /open-new --> /close-old --> /approved
-                         |                                ^
-                         |                                |
-                         `--------> /force-switch --------'
+/promote (from app repos) --> /green-to-prod --> /approved
+                  ^                            |
+                  |                            |
+                  `-------- /rollback <--------'
 ```
