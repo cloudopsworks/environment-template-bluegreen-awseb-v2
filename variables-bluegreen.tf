@@ -5,9 +5,9 @@
 #
 
 variable "deployment_enabled" {
-  type        = string
+  type = string
   validation {
-    condition = var.deployment_enabled == "a" || var.deployment_enabled == "b"
+    condition     = var.deployment_enabled == "a" || var.deployment_enabled == "b"
     error_message = "Variable must indicate blue green deployment: 'a' or 'b'"
   }
   description = "(required) Indicator of Deployment A is enabled, resources will be alive if true, otherwise will be destroyed."
