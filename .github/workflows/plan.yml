@@ -24,15 +24,39 @@ permissions:
   checks: write
 
 jobs:
+  # Job determines which label to apply
+  bluegreen:
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.bluegreen.outputs.label }}
+      nextlabel: ${{ steps.bluegreen.outputs.nextlabel }}
+      action: ${{ steps.bluegreen.outputs.action_plan }}
+    steps:
+      # Source Checkout from PR Head
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+
+      - name: Blue Green Deployment staging check
+        id: bluegreen
+        run: |
+          label=$(cat .bluegreen_state | head -n 1)
+          plan=$(cat .action_plan | head -n 1)
+          nextlabel="blue-green/$label"
+          
+          echo "nextlabel=${nextlabel}" >> $GITHUB_OUTPUT
+          echo "label=${label}" >> $GITHUB_OUTPUT
+          echo "action_plan=${plan}" >> $GITHUB_OUTPUT
+
   # Plan Job:
   #   Just makes validations that the Terraform scripts are OK to continue
   plan:
+    needs:
+      - bluegreen
+    if: ${{ needs.bluegreen.outputs.action != 'approved' }}
     runs-on: ubuntu-latest
     outputs:
       auto_approve: ${{ steps.check_automatic.outputs.autoapprove }}
-      bluegreen_label: ${{ steps.bluegreen.outputs.label }}
-      bluegreen_nextlabel: ${{ steps.bluegreen.outputs.nextlabel }}
-      bluegreen_action: ${{ steps.bluegreen.outputs.action_plan }}
     steps:
       # Automatic Labeling from .github/labeler.yml
       - uses: actions/labeler@v3
@@ -96,17 +120,6 @@ jobs:
         run: terraform validate -no-color
         continue-on-error: true
 
-      - name: Blue Green Deployment staging check
-        id: bluegreen
-        run: |
-          label=$(cat .bluegreen_state | head -n 1)
-          plan=$(cat .action_plan | head -n 1)
-          nextlabel="blue-green/$label"
-
-          echo "nextlabel=${nextlabel}" >> $GITHUB_OUTPUT
-          echo "label=${label}" >> $GITHUB_OUTPUT
-          echo "action_plan=${plan}" >> $GITHUB_OUTPUT
-
       # Report as PR comment the output of validations
       - name: Report Validations Output
         uses: actions/github-script@v6
@@ -134,8 +147,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs:
+      - bluegreen
       - plan
-    if: needs.plan.outputs.bluegreen_action != 'rollback'
+    if: ${{ needs.bluegreen.outputs.action != 'rollback' && needs.bluegreen.outputs.action != 'approved' }}
     steps:
       # Check out of the PR HEAD (default)
       - uses: actions/checkout@v2
@@ -260,12 +274,13 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['${{ steps.bluegreen.outputs.label }}/deployed']
+              labels: ['${{ needs.bluegreen.outputs.label }}/deployed']
             })
 
   # Proceed with labeling if the procedure is candidate to be autoapproved
   label_autoapprove:
     needs:
+      - bluegreen
       - plan
     runs-on: ubuntu-latest
     if: ${{ needs.plan.outputs.auto_approve == 'true' }}
@@ -286,7 +301,7 @@ jobs:
     needs:
       - plan
     runs-on: ubuntu-latest
-    if: ${{ needs.plan.outputs.auto_approve != 'true' }}
+    if: ${{ needs.plan.outputs.auto_approve != 'true' && needs.bluegreen.outputs.action != 'approved' }}
     steps:
       - uses: actions/checkout@v2
         with:
@@ -307,8 +322,8 @@ jobs:
           script: |
             const reviewers_json=JSON.parse('${{ steps.reviewers.outputs.as_json }}');
             const reviewers_count=${{ steps.reviewers.outputs.count }};
-            const label='${{ needs.plan.outputs.bluegreen_label }}';
-            const nextlabel='${{ needs.plan.outputs.bluegreen_nextlabel }}';
+            const label='${{ needs.bluegreen.outputs.label }}';
+            const nextlabel='${{ needs.bluegreen.outputs.nextlabel }}';
             const labels = ['approval-required','review-required'];
             const actor = '${{ github.event.pull_request.user.login }}'
 
@@ -343,7 +358,7 @@ jobs:
     needs:
       - plan
     runs-on: ubuntu-latest
-    if: ${{ needs.plan.outputs.auto_approve != 'true' }}
+    if: ${{ needs.plan.outputs.auto_approve != 'true' && needs.bluegreen.outputs.action != 'approved' }}
     outputs:
       is_mergeable: ${{ steps.check.outputs.result }}
     steps:
@@ -385,7 +400,7 @@ jobs:
   rollback-on-master:
     needs:
       - plan
-    if: needs.plan.outputs.bluegreen_action == 'rollback'
+    if: ${{ needs.bluegreen.outputs.action == 'rollback' }}
     runs-on: ubuntu-latest
     steps:
       # Install terraform
@@ -489,7 +504,7 @@ jobs:
     needs:
       - plan
       - rollback-on-master
-    if: needs.plan.outputs.bluegreen_action == 'rollback'
+    if: ${{ needs.bluegreen.outputs.action == 'rollback' }}
     steps:
       - name: Closes the Pull Request
         uses: actions/github-script@v6

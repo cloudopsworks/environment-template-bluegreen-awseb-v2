@@ -168,7 +168,7 @@ jobs:
       - name: Decommission blue
         if: ${{ steps.approval.outputs.result == 'approved' }}
         run: |
-          echo "approve_and_decommission_blue" > .action_plan
+          echo "approved" > .action_plan
           green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
           blue_server_version=a
           if [ $green_server_version = $blue_server_version ]; then
