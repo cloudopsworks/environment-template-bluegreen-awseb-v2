@@ -36,7 +36,7 @@ module "app_version_b" {
   namespace            = var.namespace
   solution_stack       = var.solution_stack
   repository_owner     = var.repository_owner
-  source_folder        = "values/${release_name}"
+  source_folder        = "values/${var.release_name}"
   bluegreen_identifier = "b"
   # Uncomment below to override the default source for the solution stack
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
