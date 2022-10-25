@@ -297,7 +297,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['${{ needs.bluegreen.outputs.label }}/deployed']
+              labels: ['${{ needs.bluegreen.outputs.nextlabel }}/deployed']
             })
 
   # Proceed with labeling if the procedure is candidate to be autoapproved
