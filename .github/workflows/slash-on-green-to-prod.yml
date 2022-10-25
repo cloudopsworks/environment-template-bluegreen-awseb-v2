@@ -56,7 +56,6 @@ jobs:
         run: |
           green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
           sed -i -e "s/deployment_enabled[ \t]*=.*/deployment_enabled = \"${green_server_version}\"/g" terraform.tfvars
-          echo "green_to_prod" > .action_plan
 
       # Do Tidy on terraform Files
       - name: Terraform tidy up

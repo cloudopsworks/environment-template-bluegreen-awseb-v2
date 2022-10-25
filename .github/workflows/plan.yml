@@ -30,7 +30,7 @@ jobs:
     outputs:
       label: ${{ steps.bluegreen.outputs.label }}
       nextlabel: ${{ steps.bluegreen.outputs.nextlabel }}
-      action: ${{ steps.bluegreen.outputs.action_plan }}
+      action: ${{ steps.pr_status.outputs.result }}
     steps:
       # Source Checkout from PR Head
       - uses: actions/checkout@v2
@@ -41,12 +41,35 @@ jobs:
         id: bluegreen
         run: |
           label=$(cat .bluegreen_state | head -n 1)
-          plan=$(cat .action_plan | head -n 1)
           nextlabel="blue-green/$label"
           
           echo "nextlabel=${nextlabel}" >> $GITHUB_OUTPUT
           echo "label=${label}" >> $GITHUB_OUTPUT
-          echo "action_plan=${plan}" >> $GITHUB_OUTPUT
+
+      - name: Get PR status from labels
+        id: pr_status
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          result-encoding: string
+          script: |
+            const pull_request_number = context.issue.number;
+            
+            const {data: pullLabels} = await github.rest.issues.listLabelsOnIssue({
+              issue_number: pull_request_number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const labels = pullLabels.map(label => label.name);
+            
+            for ( const aLabel of labels ) {
+              if ( aLabel == 'approved' )
+                return aLabel;
+              else if ( aLabel == 'rollback' ) 
+                return aLabel;
+            }
+            return 'in-progress';
 
   # Plan Job:
   #   Just makes validations that the Terraform scripts are OK to continue

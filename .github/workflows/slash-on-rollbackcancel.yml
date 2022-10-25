@@ -48,7 +48,7 @@ jobs:
 
       - name: Rollback everything
         run: |
-          echo "rollback" > .action_plan
+          echo "ROLLED BACK" >> README.md
 
       - name: Push change to branch
         run: |
