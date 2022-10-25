@@ -26,16 +26,18 @@ module "app_dns_b" {
 
 module "app_version_b" {
   source          = "cloudopsworks/beanstalk-version/aws"
-  version         = "1.0.2"
+  version         = "1.0.3"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name     = var.release_name
-  source_name      = var.source_name
-  source_version   = var.app_version_b
-  namespace        = var.namespace
-  solution_stack   = var.solution_stack
-  repository_owner = var.repository_owner
+  release_name         = var.release_name
+  source_name          = var.source_name
+  source_version       = var.app_version_b
+  namespace            = var.namespace
+  solution_stack       = var.solution_stack
+  repository_owner     = var.repository_owner
+  source_folder        = "values/${release_name}"
+  bluegreen_identifier = "b"
   # Uncomment below to override the default source for the solution stack
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
   # force_source_compressed = true
