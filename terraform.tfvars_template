@@ -15,15 +15,8 @@ artifact_expiration_days = 365
 versions_expiration_days = 365
 
 ##
-# Specific values regarding the environment
-release_name         = "<RELEASE-NAME>"
-source_name          = "<CHART-NAME-ON-REPO"
-app_version_a        = "<VERSION_1>"
-app_version_b        = "<VERSION_1>"
-deployment_enabled   = "<a or b>"
-
-##
 # Elastic Beanstalk specific configurations
+# (USER EDITABLE)
 #
 # Solution stack is one of:
 #   java      = "^64bit Amazon Linux 2 (.*) Corretto 8(.*)$"
@@ -39,8 +32,8 @@ deployment_enabled   = "<a or b>"
 # Or the full name of the stack from AWS supported stacks in order to prevent upgrades.
 solution_stack                 = "SOLUTION_STACK"
 beanstalk_application          = "BEANSTALK APPLICATION WHERE TO BUILD"
-beanstalk_ec2_key              = "EXISITNG EC2 KEY (SSH)"
-beanstalk_ami_id               = "EXISITNG AMI TO BASE RUN or BLANK is Default"
+#beanstalk_ec2_key              = "EXISITNG EC2 KEY (SSH)"
+#beanstalk_ami_id               = "EXISITNG AMI TO BASE RUN or BLANK is Default"
 beanstalk_instance_port        = 8081
 beanstalk_enable_spot          = true
 beanstalk_default_retention    = 90
@@ -52,7 +45,6 @@ beanstalk_instance_volume_type = "gp2"
 ##
 # Load Balancing Configuration
 load_balancer_public             = false
-load_balancer_log_bucket         = local.load_balancer_log_bucket
 load_balancer_ssl_certificate_id = "EXISTING CERTIFICATE"
 #load_balancer_ssl_policy         = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 #load_balancer_alias              = "OVERRIDE LB ALIAS"
@@ -104,3 +96,24 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 #    value     = "<VALUE>"
 #  }
 #]
+
+
+###################################################
+######## MANAGED BY SCRIPTS - DO NOT EDIT #########
+###################################################
+
+##
+# Specific values regarding the environment, managed by scripts
+# (DO NOT TOUCH!)
+release_name         = "<RELEASE-NAME>"
+source_name          = "<CHART-NAME-ON-REPO"
+app_version_a        = "<VERSION_1>"
+app_version_b        = "<VERSION_1>"
+deployment_traffic   = "<a or b>"
+
+##
+# Deployment destruction control, managed by scripts.
+# (DO NOT TOUCH!)
+deployment_a_deactivated = true
+deployment_b_deactivated = true
+

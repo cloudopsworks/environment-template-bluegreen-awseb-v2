@@ -57,7 +57,7 @@ jobs:
             else
               green_server_version="a"
             fi
-            [ -f app-module-${green_server_version}.tf.deactivated ] && mv app-module-${green_server_version}.tf.deactivated app-module-${green_server_version}.tf
+            sed -i -e "s/deployment_${green_server_version}_deactivated[ \t]*=.*/deployment_${green_server_version}_deactivated = false/g" terraform.tfvars
             echo "$green_server_version" > .bluegreen_state
             tier="blue-green/$green_server_version"
           fi

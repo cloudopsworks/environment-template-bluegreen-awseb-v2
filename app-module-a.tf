@@ -8,8 +8,8 @@
 # This module to manage DNS association.
 #   - This can be commented out to disable DNS management (not recommended)
 #
-module "app_dns_b" {
-  count = !var.app_domain_disabled ? 1 : 0
+module "app_dns_a" {
+  count = !var.app_domain_disabled && !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
   version         = "1.0.1"
@@ -17,14 +17,16 @@ module "app_dns_b" {
   sts_assume_role = var.sts_assume_role
 
   release_name                = var.release_name
-  namespace                   = format("%s-%s", var.namespace, "b")
+  namespace                   = format("%s-%s", var.namespace, "a")
   domain_name                 = var.app_domain_name
   domain_name_alias_prefix    = var.app_domain_alias
-  domain_name_weight          = var.deployment_enabled == "b" ? 10 : 0
-  beanstalk_environment_cname = module.beanstalk_app_b.environment_cname
+  domain_name_weight          = var.deployment_traffic == "a" ? 10 : 0
+  beanstalk_environment_cname = module.beanstalk_app_a.0.environment_cname
 }
 
-module "app_version_b" {
+module "app_version_a" {
+  count = !var.deployment_a_deactivated ? 1 : 0
+
   source          = "cloudopsworks/beanstalk-version/aws"
   version         = "1.0.3"
   region          = var.region
@@ -32,12 +34,12 @@ module "app_version_b" {
 
   release_name         = var.release_name
   source_name          = var.source_name
-  source_version       = var.app_version_b
+  source_version       = var.app_version_a
   namespace            = var.namespace
   solution_stack       = var.solution_stack
   repository_owner     = var.repository_owner
   source_folder        = "values/${var.release_name}"
-  bluegreen_identifier = "b"
+  bluegreen_identifier = "a"
   # Uncomment below to override the default source for the solution stack
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
   # force_source_compressed = true
@@ -48,16 +50,18 @@ module "app_version_b" {
   beanstalk_application = var.beanstalk_application
 }
 
-module "beanstalk_app_b" {
+module "beanstalk_app_a" {
+  count = !var.deployment_a_deactivated ? 1 : 0
+
   source          = "cloudopsworks/beanstalk-deploy/aws"
   version         = "1.0.1"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
   release_name              = var.release_name
-  namespace                 = format("%s-%s", var.namespace, "b")
+  namespace                 = format("%s-%s", var.namespace, "a")
   solution_stack            = var.solution_stack
-  application_version_label = module.app_version_b.application_version_label
+  application_version_label = module.app_version_a.0.application_version_label
 
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
@@ -78,10 +82,10 @@ module "beanstalk_app_b" {
 
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
-  load_balancer_log_prefix         = "${var.release_name}-b"
+  load_balancer_log_prefix         = "${var.release_name}-a"
   load_balancer_ssl_certificate_id = var.load_balancer_ssl_certificate_id
   load_balancer_ssl_policy         = var.load_balancer_ssl_policy
-  load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "b") : format("%s-%s", var.load_balancer_alias, "b")
+  load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "a") : format("%s-%s", var.load_balancer_alias, "a")
 
   port_mappings  = var.beanstalk_port_mappings
   extra_settings = var.extra_settings

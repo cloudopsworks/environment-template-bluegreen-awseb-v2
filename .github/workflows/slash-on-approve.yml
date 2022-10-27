@@ -173,7 +173,7 @@ jobs:
           if [ $green_server_version = $blue_server_version ]; then
             blue_server_version="b"
           fi
-          mv app-module-${blue_server_version}.tf app-module-${blue_server_version}.tf.deactivated
+          sed -i -e "s/deployment_${blue_server_version}_deactivated[ \t]*=.*/deployment_${blue_server_version}_deactivated = true/g" terraform.tfvars
 
       - name: Push change to branch
         run: |
