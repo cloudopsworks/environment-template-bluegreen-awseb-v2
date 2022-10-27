@@ -14,6 +14,7 @@ PLATFORM :=
 DESTROYFOUND := $(shell [ -f .destroy ] && echo 1 || echo 0)
 DATE :=	$(shell date +%Y%m%d-%H%M%S.%s)
 BLUEGREEN_STATE :=
+NEW_BG_STATE :=
 
 .PHONY: init
 .PHONY: checkbluegreen
@@ -98,3 +99,20 @@ else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
 endif
+
+
+config: checkbluegreen module.tf
+ifeq($(BLUEGREEN_STATE),a)
+override NEW_BG_STATE := "b"
+else
+override NEW_BG_STATE := "a"
+endif
+ifeq ($(OS),Darwin)
+	sed -i "" -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
+else ifeq ($(OS),Linux)
+	sed -i -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
+else
+	echo "platfrom $(OS) not supported to release from"
+	exit -1
+endif
+echo "$(NEW_BG_STATE)" > .bluegreen_state
