@@ -21,6 +21,7 @@ NEW_BG_STATE :=
 .PHONY: VERSION
 .PHONY: version
 .PHONY: module.tf
+.PHONY: config
 
 
 module.tf:
@@ -100,12 +101,11 @@ else
 	exit -1
 endif
 
-
 config: checkbluegreen module.tf
-ifeq($(BLUEGREEN_STATE),a)
-override NEW_BG_STATE := "b"
+ifeq ($(BLUEGREEN_STATE),a)
+override NEW_BG_STATE := b
 else
-override NEW_BG_STATE := "a"
+override NEW_BG_STATE := a
 endif
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
@@ -115,4 +115,4 @@ else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
 endif
-echo "$(NEW_BG_STATE)" > .bluegreen_state
+	echo "$(NEW_BG_STATE)" > .bluegreen_state
