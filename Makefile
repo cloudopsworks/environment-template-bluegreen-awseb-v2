@@ -33,16 +33,20 @@ module.tf:
 	fi
 
 checkbluegreen:
+	$(info "BlueGreen Check")
 	@if [ ! -f .bluegreen_state ] ; then \
 		echo "a" > .bluegreen_state ; \
 		sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars ; \
 		sed -i -e "s/deployment_a_deactivated[ \t]*=.*/deployment_a_deactivated = false/g" terraform.tfvars ; \
 	fi
+
+state:
+	$(info "Checking state")
 ifneq ("$(wildcard .bluegreen_state)","")
 override BLUEGREEN_STATE := $(shell head -n 1 .bluegreen_state |head -c 1)
 endif
 
-version: VERSION checkbluegreen module.tf 
+version: VERSION checkbluegreen state module.tf
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
 	sed -i "" -e "s/source_name[ \t]*=.*/source_name = \"$(CHART)\"/" terraform.tfvars
@@ -101,12 +105,14 @@ else
 	exit -1
 endif
 
-config: checkbluegreen module.tf
+bgstate:
 ifeq ($(BLUEGREEN_STATE),a)
 override NEW_BG_STATE := b
 else
 override NEW_BG_STATE := a
 endif
+
+config: checkbluegreen state bgstate
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
 else ifeq ($(OS),Linux)
