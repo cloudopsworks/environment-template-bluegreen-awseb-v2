@@ -325,7 +325,7 @@ jobs:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             const tf_outputs = JSON.parse('${{ steps.tf_result.outputs.stdout }}');
-            const bluegreen_version = '${{ steps.bluegreen.outputs.label }}';
+            const bluegreen_version = '${{ needs.bluegreen.outputs.label }}';
             
             const output = `### Application Deployment information:
             Available Environment: *\`${bluegreen_version}\`*
