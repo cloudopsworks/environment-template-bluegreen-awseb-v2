@@ -80,5 +80,5 @@ jobs:
               issue_number: pull_request_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: [ 'blue-green/promoted' ]
+              labels: [ 'green-to-prod' ]
             });
