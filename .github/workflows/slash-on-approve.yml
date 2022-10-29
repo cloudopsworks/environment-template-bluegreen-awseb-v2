@@ -154,6 +154,12 @@ jobs:
                 repo: context.repo.repo,
                 name: 'review-required'
               });
+              github.rest.issues.removeLabel({
+                issue_number: pull_request_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                name: 'green-to-prod'
+              });
               github.rest.issues.addLabels({
                 issue_number: pull_request_number,
                 owner: context.repo.owner,
