@@ -8,9 +8,9 @@ output "url_cname" {
 }
 
 output "url_deployment_a" {
-  value = count(module.beanstalk_app_a) > 0 ? module.beanstalk_app_a[0].environment_cname : ""
+  value = length(module.beanstalk_app_a) > 0 ? module.beanstalk_app_a[0].environment_cname : ""
 }
 
 output "url_deployment_b" {
-  value = count(module.beanstalk_app_b) > 0 ? module.beanstalk_app_b[0].environment_cname : ""
+  value = length(module.beanstalk_app_b) > 0 ? module.beanstalk_app_b[0].environment_cname : ""
 }
