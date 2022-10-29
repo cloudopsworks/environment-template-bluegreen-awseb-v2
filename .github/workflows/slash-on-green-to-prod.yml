@@ -60,7 +60,7 @@ jobs:
           script: |
             const pull_request_number = '${{ github.event.client_payload.slash_command.args.named.pull_request_number }}';
             const {data: pullLabels} = await github.rest.issues.listLabelsOnIssue({
-              issue_number: context.issue.number,
+              issue_number: pull_request_number,
               owner: context.repo.owner,
               repo: context.repo.repo
             });
