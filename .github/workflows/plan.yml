@@ -294,6 +294,7 @@ jobs:
       # Label step as deployed
       - name: Label PR step as deployed
         uses: actions/github-script@v6
+        if: steps.plan.outcome == 'success'
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -301,7 +302,7 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              labels: ['${{ needs.bluegreen.outputs.nextlabel }}/deployed']
+              labels: ['deployed']
             })
 
       # Output where the version is deployed
@@ -446,7 +447,7 @@ jobs:
             var is_mergeable = false;
 
             for (const aLabel of labels) {
-              if ( aLabel == 'blue-green/new' || aLabel == 'blue-green/completed' ) {
+              if ( aLabel == 'blue-green/new' || aLabel == 'approved' ) {
                 is_mergeable = true;
               }
             }

@@ -51,17 +51,60 @@ jobs:
         with:
           terraform_version: 1.3.3
 
+      - name: Check if can go Green to Prod
+        uses: actions/github-script@v6
+        id: check_go
+        with:
+          github-token: ${{secrets.BOT_TOKEN}}
+          result-encoding: string
+          script: |
+            const pull_request_number = '${{ github.event.client_payload.slash_command.args.named.pull_request_number }}';
+            const {data: pullLabels} = await github.rest.issues.listLabelsOnIssue({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo
+            });
+
+            const labels = pullLabels.map(label => label.name);
+
+            var can_proceed = false;
+
+            for (const aLabel of labels) {
+              if ( aLabel == 'deployed' ) {
+                can_proceed = true;
+              }
+            }
+            
+            if ( !can_proceed ) {
+              const message = `Cannot proceed with Green To PROD promotion, conditions not met.
+              Please check if there were any error on Validations.
+            
+              Submit: */green-to-prod|/approve|/lgtm|/approved* in order to continue with next step of Blue/Green Deployment.`;
+            
+              github.rest.issues.createComment({
+                issue_number: pull_request_number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: message
+              });
+            }
+            
+            return ( can_proceed ? 'true' : 'false' );
+
       # Replacement on terraform.tfvars the switch value for the env
       - name: Proceed to switch to new environment
+        if: ${{ steps.check_go.outputs.result == 'true' }}
         run: |
           green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
           sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"${green_server_version}\"/g" terraform.tfvars
 
       # Do Tidy on terraform Files
       - name: Terraform tidy up
+        if: ${{ steps.check_go.outputs.result == 'true' }}
         run: terraform fmt
 
       - name: Push change to branch
+        if: ${{ steps.check_go.outputs.result == 'true' }}
         run: |
           git add .
           git config --global user.name "${{ secrets.BOT_USER }}"
@@ -71,6 +114,7 @@ jobs:
 
       - name: Label entry at proper step
         uses: actions/github-script@v6
+        if: ${{ steps.check_go.outputs.result == 'true' }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
