@@ -87,7 +87,7 @@ jobs:
           git commit -a -m "chore: promote from ${{ github.event.client_payload.promote.repository }} to ${{ github.event.client_payload.promote.releasename }} - v${{ github.event.client_payload.promote.version }}"
 
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v4
         with:
           committer: ${{ secrets.BOT_USER }} <${{ secrets.BOT_EMAIL }}>
           branch: promote-${{ github.event.client_payload.promote.releasename }}-v${{ github.event.client_payload.promote.version }}
