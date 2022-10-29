@@ -285,6 +285,7 @@ jobs:
         if: ${{ steps.plan.outcome != 'success' || steps.apply.outcome != 'success' }}
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             core.setFailed('Plan or Apply for Deploy was not successful!')
 
@@ -292,12 +293,52 @@ jobs:
       - name: Label PR step as deployed
         uses: actions/github-script@v6
         with:
+          github-token: ${{ secrets.BOT_TOKEN }}
           script: |
             github.rest.issues.addLabels({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               labels: ['${{ needs.bluegreen.outputs.nextlabel }}/deployed']
+            })
+
+      # Output where the version is deployed
+      - name: Terraform output
+        id: tf_result
+        if: steps.plan.outcome == 'success'
+        run: terraform output -json
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TF_AWS_SECRET_ACCESS_KEY }}
+          HELM_CREDS_USER: ${{ secrets.AZURE_SERVICE_ID }}
+          HELM_CREDS_PASSWORD: ${{ secrets.AZURE_SERVICE_SECRET }}
+          HELM_EXPERIMENTAL_OCI: "1"
+          GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
+
+      # Take output from Terraform and display on PR
+      - name: Display outputs
+        if: steps.plan.outcome == 'success'
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const tf_outputs = JSON.parse('${{ steps.tf_result.outputs.stdout }}');
+            const bluegreen_version = '${{ steps.bluegreen.outputs.label }}';
+            
+            const output = `### Application Deployment information:
+            Available Environment: *\`${bluegreen_version}\`*
+            CNAME URL: *\`${tf_outputs.url_cname.value}\`*
+            Environment A URL: *\`${tf_outputs.url_deployment_a.value}\`*
+            Environment B URL: *\`${tf_outputs.url_deployment_b.value}\`*
+            
+            
+            *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
             })
 
   # Proceed with labeling if the procedure is candidate to be autoapproved
