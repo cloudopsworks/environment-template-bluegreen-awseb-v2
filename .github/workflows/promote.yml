@@ -87,7 +87,7 @@ jobs:
           git config --global user.email "${{ secrets.BOT_EMAIL }}"
           MSG="chore: promote from ${{ github.event.client_payload.promote.repository }} to ${{ github.event.client_payload.promote.releasename }} - v${{ github.event.client_payload.promote.version }}"
           tracking=${{ github.event.client_payload.promote.trackingid }}
-          if [ "a$tracking" = "a" ] ; then
+          if [ "a$tracking" != "a" ] ; then
             MSG="$MSG - Fixes: $tracking"
             echo "trackingid=TrackingID/$tracking" >> $GITHUB_OUTPUT
           fi
