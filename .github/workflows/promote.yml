@@ -20,6 +20,9 @@ permissions:
 
 jobs:
   env-promotion:
+    concurrency:
+      group: deploy-promotion
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     steps:
       - name: Output payload
@@ -71,14 +74,6 @@ jobs:
       - name: Terraform tidy up
         run: terraform fmt
 
-      # - name: Commit change to branch
-      #   uses: EndBug/add-and-commit@v9
-      #   with:
-      #     push: false
-      #     add: "."
-      #     author_name: ${{ secrets.BOT_USER }}
-      #     author_email: ${{ secrets.BOT_EMAIL }}
-      #     message: "chore: promote from ${{ github.event.client_payload.promote.repository }} to ${{ github.event.client_payload.promote.releasename }} - v${{ github.event.client_payload.promote.version }}"
       - name: Push change to Branch
         id: push
         run: |
