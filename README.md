@@ -43,3 +43,24 @@ First step is to run the following command:
 ```shell
 make init
 ```
+
+### Create OWNERS file
+This file is require to configure the automation workflow
+you have to copy current `OWNERS_template` to `OWNERS
+* For this kind of repository you must have the following set:
+  ```yaml
+  automatic: false
+  ```
+* Adjust the number of required reviewers, remember that the approvals 
+should fulfill the number selected here, the entry is required.
+  ```yaml
+  requiredReviewers: 2
+  ```
+* Next you have to configure the valid reviewers/approvers on the workflow
+the entry is required, the users listed are the GitHub Ids.
+  ```yaml
+  reviewers:
+    - user1
+    - user2
+    - user3
+  ```
