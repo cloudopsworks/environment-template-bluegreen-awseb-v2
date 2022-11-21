@@ -40,10 +40,11 @@ checkbluegreen:
 		sed -i -e "s/deployment_a_deactivated[ \t]*=.*/deployment_a_deactivated = false/g" terraform.tfvars ; \
 	fi
 
+.PHONY: state
 state:
 	$(info "Checking state")
 ifneq ("$(wildcard .bluegreen_state)","")
-override BLUEGREEN_STATE := $(shell head -n 1 .bluegreen_state |head -c 1)
+	$(eval BLUEGREEN_STATE = $(shell head -n 1 .bluegreen_state |head -c 1))
 endif
 
 version: VERSION checkbluegreen state module.tf
@@ -98,8 +99,10 @@ init-template:
 init: init-template
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/default_bucket_prefix[ \t]*=.*/default_bucket_prefix = \"$(CURR)\"/" terraform.tfvars
+	sed -i "" -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars
 else ifeq ($(OS),Linux)
 	sed -i -e "s/default_bucket_prefix[ \t]*=.*/default_bucket_prefix = \"$(CURR)\"/" terraform.tfvars
+	sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars
 else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
