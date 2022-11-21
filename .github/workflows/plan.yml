@@ -70,6 +70,8 @@ jobs:
                 return aLabel;
               else if ( aLabel == 'green-to-prod' )
                 return aLabel;
+              else if ( aLabel == 'blue-green/new' )
+                return "new";
             }
             return 'in-progress';
 
@@ -320,7 +322,7 @@ jobs:
 
       # Take output from Terraform and display on PR
       - name: Display outputs
-        if: ${{ steps.plan.outcome == 'success' && (needs.bluegreen.outputs.action == 'approved' || needs.bluegreen.outputs.action == 'green-to-prod') }}
+        if: ${{ steps.plan.outcome == 'success' && steps.tf_result.outcome == 'success' }}
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.BOT_TOKEN }}

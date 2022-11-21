@@ -43,9 +43,9 @@ checkbluegreen:
 .PHONY: state
 state:
 	$(info "Checking state")
-ifneq ("$(wildcard .bluegreen_state)","")
+#ifneq ("$(wildcard .bluegreen_state)","")
 	$(eval BLUEGREEN_STATE = $(shell head -n 1 .bluegreen_state |head -c 1))
-endif
+#endif
 
 version: VERSION checkbluegreen state module.tf
 ifeq ($(OS),Darwin)
