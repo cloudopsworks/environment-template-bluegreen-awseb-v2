@@ -86,7 +86,7 @@ jobs:
       auto_approve: ${{ steps.check_automatic.outputs.autoapprove }}
     steps:
       # Automatic Labeling from .github/labeler.yml
-      - uses: actions/labeler@v3
+      - uses: actions/labeler@v4
         with:
           repo-token: ${{ secrets.BOT_TOKEN }}
 

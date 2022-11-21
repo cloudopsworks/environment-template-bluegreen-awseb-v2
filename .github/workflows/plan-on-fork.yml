@@ -77,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.bluegreen.outputs.action != 'approved' || needs.bluegreen.outputs.action != 'rollback' }}
     steps:
-      - uses: actions/labeler@v3
+      - uses: actions/labeler@v4
         with:
           repo-token: ${{ secrets.BOT_TOKEN }}
 
