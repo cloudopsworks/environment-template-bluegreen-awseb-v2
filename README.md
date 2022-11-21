@@ -26,3 +26,20 @@ make config
 ```
 Do all configuration changes on **./values/** <br/>
 Commit changes to the branch and push to repository
+
+### Initial Setup
+#### Configuring Backend
+First step is to configure the backend configuration for the environment
+this is done copying the following file: `backend.tf_template` as `backend.tf`
+there is a asample configuration for S3 backend where it can be done but
+you can select whatever backend suits for the case. <br/>
+Documentation about Terraform Backends can be found **[here](https://developer.hashicorp.com/terraform/language/settings/backends/configuration)**.
+
+### Environment Variables for deployment automation
+The second point is to configure the environment variables to
+setup this environment and maintain the S3 Bucket and deployment pipeline. <br/>
+
+First step is to run the following command:
+```shell
+make init
+```

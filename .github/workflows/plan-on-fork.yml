@@ -32,7 +32,7 @@ jobs:
       action: ${{ steps.pr_status.outputs.result }}
     steps:
       # Source Checkout from PR Head
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -90,7 +90,7 @@ jobs:
           echo "owner=$repo_owner" >> $GITHUB_OUTPUT
           echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.BOT_TOKEN }}
 

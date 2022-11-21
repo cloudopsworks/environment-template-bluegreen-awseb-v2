@@ -33,7 +33,7 @@ jobs:
       action: ${{ steps.pr_status.outputs.result }}
     steps:
       # Source Checkout from PR Head
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -98,7 +98,7 @@ jobs:
           echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
       # Source Checkout from PR Head
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -177,7 +177,7 @@ jobs:
     if: ${{ needs.bluegreen.outputs.action != 'rollback' && needs.bluegreen.outputs.action != 'approved' }}
     steps:
       # Check out of the PR HEAD (default)
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -370,7 +370,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.plan.outputs.auto_approve != 'true' && needs.bluegreen.outputs.action != 'approved' }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -491,7 +491,7 @@ jobs:
             return thePull.base.ref;
 
       # Proceed with checkout of source with all the references (depth=0)  
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
           ref: ${{ steps.the_pull.outputs.result }}
