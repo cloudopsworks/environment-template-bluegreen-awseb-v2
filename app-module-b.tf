@@ -21,6 +21,7 @@ module "app_dns_b" {
   domain_name                 = var.app_domain_name
   domain_name_alias_prefix    = var.app_domain_alias
   domain_name_weight          = var.deployment_traffic == "b" ? 10 : 0
+  default_domain_ttl          = var.app_domain_ttl
   beanstalk_environment_cname = module.beanstalk_app_b.0.environment_cname
 }
 

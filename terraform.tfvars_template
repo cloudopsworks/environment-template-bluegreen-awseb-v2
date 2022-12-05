@@ -61,6 +61,7 @@ server_types    = ["SERVER TYPES LIST THIS WILL HELP TO ALLOCATE DEPLOY",]
 #app_domain_disabled = true
 app_domain_name     = "DOMAIN WHERE TO CREATE ALIAS"
 app_domain_alias    = "DOMAIN NAME ALIAS"
+#app_domain_ttl      = 3600
 
 ##
 # Optional variable for mapping ports to backend ports:

@@ -46,3 +46,9 @@ variable "app_domain_disabled" {
   default     = false
   description = "(optional) Flag to disable Domain Management for application."
 }
+
+variable "app_domain_ttl" {
+  type        = number
+  default     = 300
+  description = "(optional) Default TTL for the App Domain."
+}
