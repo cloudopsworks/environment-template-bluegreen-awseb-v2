@@ -13,14 +13,14 @@ Environment Template for AWS ElasticBeanstalk based apps with Blue-Green strateg
 ### Promotion:
 Promotion process starts with creating an issue on APP Repository and issue the following comment:
 ```
-/promote version=<version number> env=<this environment suffix>
+/promote version=<version number> env=<this environment suffix> {tracking_d=CUSTOM TRACKING ID}
 ```
 Version suffix stands for the name after `environment-<organization>-` on this repository name.
 
 ### Configuration change
 Create a new Branch with following naming:
 * config-< declarative branch name >
-Run Following command on the new branch
+  Run Following command on the new branch
 ```
 make config
 ```
@@ -51,16 +51,20 @@ you have to copy current `OWNERS_template` to `OWNERS
   ```yaml
   automatic: false
   ```
-* Adjust the number of required reviewers, remember that the approvals 
-should fulfill the number selected here, the entry is required.
+* Adjust the number of required reviewers, remember that the approvals
+  should fulfill the number selected here, the entry is required.
   ```yaml
   requiredReviewers: 2
   ```
 * Next you have to configure the valid reviewers/approvers on the workflow
-the entry is required, the users listed are the GitHub Ids.
+  the entry is required, the users listed are the GitHub Ids.
   ```yaml
   reviewers:
     - user1
     - user2
     - user3
   ```
+* Push changes to Master ...
+* Proceed with Promotion Process.
+
+### (TBD) More documentation to be added soon.
