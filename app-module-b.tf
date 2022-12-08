@@ -41,7 +41,7 @@ module "app_version_b" {
   repository_owner = var.repository_owner
   # For the sake of the version consistency hash is maintained off the module
   config_source_folder = "values/${var.release_name}"
-  config_hash_file     = "${path.root}/values_hash_a.sha1"
+  config_hash_file     = "${path.root}/.values_hash_b"
   bluegreen_identifier = "b"
   # Uncomment below to override the default source for the solution stack
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
