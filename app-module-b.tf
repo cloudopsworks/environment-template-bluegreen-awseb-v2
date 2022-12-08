@@ -29,17 +29,19 @@ module "app_version_b" {
   count = !var.deployment_b_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-version/aws"
-  version         = "1.0.3"
+  version         = "1.0.4"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name         = var.release_name
-  source_name          = var.source_name
-  source_version       = var.app_version_b
-  namespace            = var.namespace
-  solution_stack       = var.solution_stack
-  repository_owner     = var.repository_owner
-  source_folder        = "values/${var.release_name}"
+  release_name     = var.release_name
+  source_name      = var.source_name
+  source_version   = var.app_version_b
+  namespace        = var.namespace
+  solution_stack   = var.solution_stack
+  repository_owner = var.repository_owner
+  # For the sake of the version consistency hash is maintained off the module
+  config_source_folder = "values/${var.release_name}"
+  config_hash_file     = "${path.root}/values_hash_a.sha1"
   bluegreen_identifier = "b"
   # Uncomment below to override the default source for the solution stack
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.

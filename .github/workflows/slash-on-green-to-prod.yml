@@ -95,8 +95,7 @@ jobs:
       - name: Proceed to switch to new environment
         if: ${{ steps.check_go.outputs.result == 'true' }}
         run: |
-          green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
-          sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"${green_server_version}\"/g" terraform.tfvars
+          make green-to-prod
 
       # Do Tidy on terraform Files
       - name: Terraform tidy up

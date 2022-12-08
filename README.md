@@ -68,3 +68,9 @@ you have to copy current `OWNERS_template` to `OWNERS
 * Proceed with Promotion Process.
 
 ### (TBD) More documentation to be added soon.
+
+### Pull Request 2nd Day
+on each values changes
+```shell
+make update
+```

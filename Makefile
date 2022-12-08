@@ -22,6 +22,10 @@ NEW_BG_STATE :=
 .PHONY: version
 .PHONY: module.tf
 .PHONY: config
+.PHONY: promote
+.PHONY: green-to-prod
+.PHONY: decomm-blue
+.PHONY: update
 
 
 module.tf:
@@ -72,6 +76,7 @@ else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
 endif
+	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(BLUEGREEN_STATE)
 
 VERSION:
 ifeq ($(VERFOUND),1)
@@ -125,3 +130,67 @@ else
 	exit -1
 endif
 	echo "$(NEW_BG_STATE)" > .bluegreen_state
+	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(NEW_BG_STATE)
+
+
+update: checkbluegreen state bgstate
+	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(BLUEGREEN_STATE)
+
+
+promote:
+ifeq ($(OS),Darwin)
+	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
+	if [ "$$green_server_version" = "a" ] ; then \
+	  green_server_version="b" ; \
+	else \
+	  green_server_version="a" ; \
+	fi ; \
+	sed -i "" -e "s/deployment_$${green_server_version}_deactivated[ \t]*=.*/deployment_$${green_server_version}_deactivated = false/g" terraform.tfvars ; \
+	echo "$$green_server_version" > .bluegreen_state
+else ifeq ($(OS),Linux)
+	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
+	if [ "$$green_server_version" = "a" ] ; then \
+	  green_server_version="b" ; \
+	else \
+	  green_server_version="a" ; \
+	fi ; \
+	sed -i -e "s/deployment_$${green_server_version}_deactivated[ \t]*=.*/deployment_$${green_server_version}_deactivated = false/g" terraform.tfvars ; \
+	echo "$$green_server_version" > .bluegreen_state
+else
+	echo "platfrom $(OS) not supported to release from"
+	exit -1
+endif
+
+
+green-to-prod:
+ifeq ($(OS),Darwin)
+	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
+	sed -i "" -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"$${green_server_version}\"/g" terraform.tfvars
+else ifeq ($(OS),Linux)
+	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
+	sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"$${green_server_version}\"/g" terraform.tfvars
+else
+	echo "platfrom $(OS) not supported to release from"
+	exit -1
+endif
+
+
+decomm-blue:
+ifeq ($(OS),Darwin)
+	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
+	blue_server_version=a ; \
+	if [ $$green_server_version = $$blue_server_version ]; then \
+	blue_server_version="b" ; \
+	fi ; \
+	sed -i "" -e "s/deployment_$${blue_server_version}_deactivated[ \t]*=.*/deployment_$${blue_server_version}_deactivated = true/g" terraform.tfvars
+else ifeq ($(OS),Linux)
+	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
+	blue_server_version=a ; \
+	if [ $$green_server_version = $$blue_server_version ]; then \
+	blue_server_version="b" ; \
+	fi ; \
+	sed -i -e "s/deployment_$${blue_server_version}_deactivated[ \t]*=.*/deployment_$${blue_server_version}_deactivated = true/g" terraform.tfvars
+else
+	echo "platfrom $(OS) not supported to release from"
+	exit -1
+endif

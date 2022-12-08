@@ -54,14 +54,8 @@ jobs:
           tier="blue-green/new"
           
           if [ -f .bluegreen_state ] ; then
+            make promote
             green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
-            if [ "$green_server_version" = "a" ] ; then
-              green_server_version="b"
-            else
-              green_server_version="a"
-            fi
-            sed -i -e "s/deployment_${green_server_version}_deactivated[ \t]*=.*/deployment_${green_server_version}_deactivated = false/g" terraform.tfvars
-            echo "$green_server_version" > .bluegreen_state
             tier="blue-green/$green_server_version"
           fi
           echo "label=$tier" >> $GITHUB_OUTPUT

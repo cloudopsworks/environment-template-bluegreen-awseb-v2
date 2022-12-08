@@ -185,12 +185,7 @@ jobs:
       - name: Decommission blue
         if: ${{ steps.approval.outputs.result == 'approved' }}
         run: |
-          green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
-          blue_server_version=a
-          if [ $green_server_version = $blue_server_version ]; then
-            blue_server_version="b"
-          fi
-          sed -i -e "s/deployment_${blue_server_version}_deactivated[ \t]*=.*/deployment_${blue_server_version}_deactivated = true/g" terraform.tfvars
+          make decomm-blue
 
       - name: Push change to branch
         run: |
