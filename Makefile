@@ -123,7 +123,6 @@ endif
 config: checkbluegreen state bgstate
 	@read -p "Enter Branch Name (no spaces):" the_branch ; \
 	git checkout -b config-$${the_branch} ; \
-	git branch -u origin config-$${the_branch} ; \
 	git push -u origin config-$${the_branch}
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
