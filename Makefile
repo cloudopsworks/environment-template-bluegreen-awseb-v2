@@ -113,8 +113,9 @@ else
 	exit -1
 endif
 
+.PHONY: bgstate
 bgstate:
-ifeq ($(BLUEGREEN_STATE),a)
+ifeq ($(shell head -n 1 .bluegreen_state |head -c 1),a)
 override NEW_BG_STATE := b
 else
 override NEW_BG_STATE := a
