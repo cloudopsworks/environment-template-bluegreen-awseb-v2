@@ -121,21 +121,24 @@ override NEW_BG_STATE := a
 endif
 
 config: checkbluegreen state bgstate
-	@echo "Requesting to create branc for configuration change:"
 	@read -p "Enter Branch Name (no spaces):" the_branch ; \
 	git checkout -b config-$${the_branch} ; \
 	git branch -u origin config-$${the_branch}
 	git push -u origin config-$${the_branch}
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
+	ver=$$(grep "app_version_$(BLUEGREEN_STATE)" | | cut -d '=' -f 2- | tr -d ' "' terraform.tfvars) ; \
+	sed -i "" -e "s/app_version_$(NEW_BG_STATE)[ \t]*=.*/app_version_$(NEW_BG_STATE) = \"$${ver}\"/g" terraform.tfvars
 else ifeq ($(OS),Linux)
 	sed -i -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
+	ver=$$(grep "app_version_$(BLUEGREEN_STATE)" | | cut -d '=' -f 2- | tr -d ' "' terraform.tfvars) ; \
+	sed -i -e "s/app_version_$(NEW_BG_STATE)[ \t]*=.*/app_version_$(NEW_BG_STATE) = \"$${ver}\"/g" terraform.tfvars
 else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
 endif
 	echo "$(NEW_BG_STATE)" > .bluegreen_state
-	@find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(NEW_BG_STATE)
+	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(NEW_BG_STATE)
 
 
 update: checkbluegreen state bgstate
