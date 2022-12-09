@@ -13,6 +13,8 @@ on:
       - ".beacon"
       - ".destroy"
 
+concurrency: environment-awseb-v2
+
 jobs:
   deploy:
     runs-on: ubuntu-latest

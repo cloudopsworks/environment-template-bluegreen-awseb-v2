@@ -10,6 +10,8 @@ on:
       - promote-environment
       - promote-env
 
+concurrency: environment-awseb-v2-promo
+
 permissions:
   issues: write
   checks: read
