@@ -269,9 +269,9 @@ jobs:
             
             var comm_output = ''; 
             if ( status == 'in-progress' ) {
-              comm_output = '/green-to-prod | /ok-to-prod | /to-prod | /apply-prod'
-            } else if ( status == 'green-to-prod' ) {
-              comm_output = '/approved | /lgtm'
+              comm_output = '/green-to-prod | /ok-to-prod | /to-prod | /apply-prod';
+            } else {
+              comm_output = '/approved | /lgtm';
             }
             
             const output = `## Changes reconciled
