@@ -18,14 +18,19 @@ Promotion process starts with creating an issue on APP Repository and issue the 
 Version suffix stands for the name after `environment-<organization>-` on this repository name.
 
 ### Configuration change
-Create a new Branch with following naming:
+This will create a new Branch with following naming:
 * config-< declarative branch name >
-* Do all configuration changes on **./values/** <br/>
-Commit changes to the branch and push to repository
 *  Run Following command on the new branch
-  ```
+  ```shell
   make config
   ```
+* Do all configuration changes on **./values/**
+* Run update on each configuration change
+  ```shell
+  make update
+  ```
+* Commit changes to the branch and push to repository
+* Create a new pull request in order to start the deployment in blue/green way.
 
 ### Initial Setup
 #### Configuring Backend
