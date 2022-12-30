@@ -265,6 +265,15 @@ jobs:
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
+            const status = '${{ needs.bluegreen.outputs.action }}';
+            
+            var comm_output = ''; 
+            if ( status == 'in-progress' ) {
+              comm_output = '/green-to-prod | /ok-to-prod | /to-prod | /apply-prod'
+            } else if ( status == 'green-to-prod' ) {
+              comm_output = '/approved | /lgtm'
+            }
+            
             const output = `## Changes reconciled
             #### Terraform Apply 📖\`${{ steps.apply.outcome }}\`
             <details><summary>Show plan/apply report</summary>
@@ -275,7 +284,7 @@ jobs:
             
             </details>
 
-            Submit: */green-to-prod | /approved* in order to continue with next step of Blue/Green Deployment.
+            Submit: *${comm_output}* in order to continue with next step of Blue/Green Deployment.
             
             *Pusher: @${{ github.actor }}, Action: \`${{ github.event_name }}\`, Working Directory: \`${{ env.tf_actions_working_dir }}\`, Workflow: \`${{ github.workflow }}\`*`;
               
