@@ -20,12 +20,12 @@ Version suffix stands for the name after `environment-<organization>-` on this r
 ### Configuration change
 Create a new Branch with following naming:
 * config-< declarative branch name >
-  Run Following command on the new branch
-```
-make config
-```
-Do all configuration changes on **./values/** <br/>
+* Do all configuration changes on **./values/** <br/>
 Commit changes to the branch and push to repository
+*  Run Following command on the new branch
+  ```
+  make config
+  ```
 
 ### Initial Setup
 #### Configuring Backend
