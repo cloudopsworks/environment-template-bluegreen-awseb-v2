@@ -192,8 +192,8 @@ jobs:
       - name: Push change to branch
         run: |
           git add .
-          git config --global user.name "${{ secrets.BOT_USER }}"
-          git config --global user.email "${{ secrets.BOT_EMAIL }}"
+          git config --global user.name "${{ vars.BOT_USER }}"
+          git config --global user.email "${{ vars.BOT_EMAIL }}"
           git commit -a -m "chore: Pushing changes approval of green environment to prod."
           git push origin
 

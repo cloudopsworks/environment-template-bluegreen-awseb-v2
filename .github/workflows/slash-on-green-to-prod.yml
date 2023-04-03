@@ -106,8 +106,8 @@ jobs:
         if: ${{ steps.check_go.outputs.result == 'true' }}
         run: |
           git add .
-          git config --global user.name "${{ secrets.BOT_USER }}"
-          git config --global user.email "${{ secrets.BOT_EMAIL }}"
+          git config --global user.name "${{ vars.BOT_USER }}"
+          git config --global user.email "${{ vars.BOT_EMAIL }}"
           git commit -a -m "chore: Pushing changes promotion of green environment to prod."
           git push origin
 
