@@ -101,7 +101,7 @@ module "logs_bucket" {
         }
       ]
       expiration = {
-        days = var.logs_expiration_days
+        days = var.logs_retention_years * 365
       }
     }
   ]
