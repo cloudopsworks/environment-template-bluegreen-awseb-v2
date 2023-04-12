@@ -43,24 +43,24 @@ module "versions_bucket" {
           storage_class = "STANDARD_IA"
         },
         {
-          days          = var.artifact_transition_days * 2
+          days          = var.artifact_archive_days
           storage_class = "GLACIER"
         }
       ]
 
       noncurrent_transition = [
         {
-          days          = var.artifact_transition_days * 2
+          days          = var.versions_archive_days
           storage_class = "GLACIER"
         }
       ]
 
       noncurrent_version_expiration = {
-        days = var.versions_expiration_days
+        days = var.versions_retention_years * 365
       }
 
       expiration = {
-        days = var.artifact_expiration_days
+        days = var.artifact_retention_years * 365
       }
     }
   ]
