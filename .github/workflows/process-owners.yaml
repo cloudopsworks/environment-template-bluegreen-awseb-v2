@@ -35,33 +35,33 @@ jobs:
         uses: mikefarah/yq@v4
         id: branch_protection_rules
         with:
-          cmd: yq e '.branchProtection' OWNERS | grep true | wc -l
+          cmd: yq '.branchProtection' OWNERS | grep true | wc -l
 
       - name: Retrieve protected sources
         uses: mikefarah/yq@v4
         id: protected_sources
         with:
-          cmd: yq e '.protectedSources' OWNERS -o json
+          cmd: yq -o=json '.protectedSources' OWNERS
 
       - name: Check if automatic
         uses: mikefarah/yq@v4
         id: check_automatic
         with:
-          cmd: yq e '.automatic' OWNERS | grep true | wc -l
+          cmd: yq '.automatic' OWNERS | grep true | wc -l
 
       - name: Reviewers Count
         uses: mikefarah/yq@v4
         id: reviewers_count
         if: ${{ steps.check_automatic.outputs.result == 0 }}
         with:
-          cmd: yq e '.requiredReviewers' OWNERS
+          cmd: yq '.requiredReviewers' OWNERS
 
       - name: Reviewers list as JSON
         uses: mikefarah/yq@v4
         id: reviewers_list
         if: ${{ steps.check_automatic.outputs.result == 0 }}
         with:
-          cmd: yq e -j -I=0 '.reviewers' OWNERS
+          cmd: yq -o=json -I=0 '.reviewers' OWNERS
 
       - name: Protect Branch
         if: ${{ steps.branch_protection_rules.outputs.result == 1 && steps.check_automatic.outputs.result == 0 }}
