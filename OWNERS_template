@@ -6,6 +6,15 @@
 # Indicate that the environment makes automatic merges and deploys
 automatic: false
 
+# Configure repository to enable branch protection
+branchProtection: true
+protectedSources:
+  - *.tf
+  - *.tfvars
+  - OWNERS
+  - Makefile
+  - .github
+
 # Optional only needed if not automatic 
 # requiredReviewers: 1
 

@@ -1,0 +1,113 @@
+# (c) 2023 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Process OWNERS file for configuration changes
+on:
+  push:
+    branches:
+      - master
+      - main
+    paths:
+      - OWNERS
+
+concurrency: environment-awseb-v2
+
+jobs:
+  process-owners:
+    runs-on: ubuntu-latest
+    steps:
+      # Get the owner repo
+      - name: Get owner
+        id: getowner
+        run: |
+          repo_owner=`echo "$GITHUB_REPOSITORY" | cut -f 1 -d "/"`
+          repo_name=`echo "$GITHUB_REPOSITORY" | cut -f 2 -d "/"`
+          echo "owner=$repo_owner" >> $GITHUB_OUTPUT
+          echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
+
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+
+      - name: Retrieve branch protection rule
+        uses: mikefarah/yq@v4
+        id: branch_protection_rules
+        with:
+          cmd: yq '.branchProtection' OWNERS | grep true | wc -l
+
+      - name: Retrieve protected sources
+        uses: mikefarah/yq@v4
+        id: protected_sources
+        with:
+          cmd: yq '.protectedSources' OWNERS -o json -M
+
+      - name: Check if automatic
+        uses: mikefarah/yq@v4
+        id: check_automatic
+        with:
+          cmd: yq e '.automatic' OWNERS | grep true | wc -l
+
+      - name: Reviewers Count
+        uses: mikefarah/yq@v4
+        id: reviewers_count
+        if: ${{ steps.check_automatic.outputs.result == 0 }}
+        with:
+          cmd: yq e '.requiredReviewers' OWNERS
+
+      - name: Reviewers list as JSON
+        uses: mikefarah/yq@v4
+        id: reviewers_list
+        if: ${{ steps.check_automatic.outputs.result == 0 }}
+        with:
+          cmd: yq e -j -I=0 '.reviewers' OWNERS
+
+      - name: Protect Branch
+        if: ${{ steps.branch_protection_rules.outputs.result == 1 && steps.check_automatic.outputs.result == 0 }}
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.BOT_TOKEN }}
+          script: |
+            const branch = context.payload.ref;
+            const branchProtectionRules = ${{ steps.branch_protection_rules.outputs.stdout }};
+            const protectedSources = ${{ steps.protected_sources.outputs.stdout }};
+            const protectedSourcesArray = protectedSources.split(',');
+            const reviewers_json=JSON.parse('${{ steps.reviewers_list.outputs.result }}');
+            const reviewers_count=${{ steps.reviewers_count.outputs.result }};
+            
+            # Get reviewers list
+            var reviewers = [];
+            for ( const rev of reviewers_json ) {
+              if ( actor != rev ) {
+                reviewers.push(rev);
+              }
+            }
+
+            # Protect the branch
+            github.repos.updateBranchProtection({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: branch,
+              required_status_checks: {
+                strict: true,
+                contexts: [
+                  "bluegreen",
+                  "plan",
+                  "deploy",
+                ]
+              },
+              enforce_admins: false,
+              required_pull_request_reviews: {
+                dismiss_stale_reviews: true,
+                require_code_owner_reviews: false,
+                required_approving_review_count: 1
+              },
+              allow_force_pushes: false,
+              allow_deletions: false,
+              required_linear_history: true,
+              allow_squash_merge: true,
+              allow_merge_commit: true,
+              allow_rebase_merge: true,
+              delete_branch_on_merge: false
+            });
