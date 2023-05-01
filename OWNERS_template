@@ -9,8 +9,8 @@ automatic: false
 # Configure repository to enable branch protection
 branchProtection: true
 protectedSources:
-  - *.tf
-  - *.tfvars
+  - "*.tf"
+  - "*.tfvars"
   - OWNERS
   - Makefile
   - .github
