@@ -35,13 +35,13 @@ jobs:
         uses: mikefarah/yq@v4
         id: branch_protection_rules
         with:
-          cmd: yq '.branchProtection' OWNERS | grep true | wc -l
+          cmd: yq e '.branchProtection' OWNERS | grep true | wc -l
 
       - name: Retrieve protected sources
         uses: mikefarah/yq@v4
         id: protected_sources
         with:
-          cmd: yq '.protectedSources' OWNERS -o json -M
+          cmd: yq e '.protectedSources' OWNERS -o json
 
       - name: Check if automatic
         uses: mikefarah/yq@v4
