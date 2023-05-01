@@ -41,7 +41,7 @@ jobs:
         uses: mikefarah/yq@v4.33.3
         id: protected_sources
         with:
-          cmd: yq -o=json '.protectedSources' OWNERS
+          cmd: yq -o=json -I=0 '.protectedSources' OWNERS
 
       - name: Check if automatic
         uses: mikefarah/yq@v4.33.3
