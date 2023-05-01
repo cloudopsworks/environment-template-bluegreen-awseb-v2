@@ -32,32 +32,32 @@ jobs:
           fetch-depth: 0
 
       - name: Retrieve branch protection rule
-        uses: mikefarah/yq@v4
+        uses: mikefarah/yq@v4.33.3
         id: branch_protection_rules
         with:
           cmd: yq '.branchProtection' OWNERS | grep true | wc -l
 
       - name: Retrieve protected sources
-        uses: mikefarah/yq@v4
+        uses: mikefarah/yq@v4.33.3
         id: protected_sources
         with:
           cmd: yq -o=json '.protectedSources' OWNERS
 
       - name: Check if automatic
-        uses: mikefarah/yq@v4
+        uses: mikefarah/yq@v4.33.3
         id: check_automatic
         with:
           cmd: yq '.automatic' OWNERS | grep true | wc -l
 
       - name: Reviewers Count
-        uses: mikefarah/yq@v4
+        uses: mikefarah/yq@v4.33.3
         id: reviewers_count
         if: ${{ steps.check_automatic.outputs.result == 0 }}
         with:
           cmd: yq '.requiredReviewers' OWNERS
 
       - name: Reviewers list as JSON
-        uses: mikefarah/yq@v4
+        uses: mikefarah/yq@v4.33.3
         id: reviewers_list
         if: ${{ steps.check_automatic.outputs.result == 0 }}
         with:
