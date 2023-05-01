@@ -85,7 +85,7 @@ jobs:
             };
 
             // Protect the Branch
-            github.repos.updateBranchProtection({
+            github.rest.repos.updateBranchProtection({
               owner: context.repo.owner,
               repo: context.repo.repo,
               branch: branch,

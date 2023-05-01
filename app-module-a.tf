@@ -29,7 +29,7 @@ module "app_version_a" {
   count = !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-version/aws"
-  version         = "1.0.4"
+  version         = "1.0.5"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -57,7 +57,7 @@ module "beanstalk_app_a" {
   count = !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.2"
+  version         = "1.0.3"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -92,4 +92,5 @@ module "beanstalk_app_a" {
 
   port_mappings  = var.beanstalk_port_mappings
   extra_settings = var.extra_settings
+  extra_tags     = var.extra_tags
 }

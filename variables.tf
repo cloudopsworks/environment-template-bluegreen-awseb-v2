@@ -57,3 +57,9 @@ variable "versions_archive_days" {
   description = "(required) Transition to archive storage tier Standard-IA -> Glacier in days."
   default     = 365
 }
+
+variable "extra_tags" {
+  type        = map(string)
+  description = "(optional) Extra tags to add to the resources"
+  default     = {}
+}

@@ -66,6 +66,13 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 #app_domain_ttl      = 3600
 
 ##
+# Optional variable for adding extra tags to the environment
+# extra_tags = {
+#   "tag1" = "value1"
+#   "tag2" = "value2"
+# }
+
+##
 # Optional variable for mapping ports to backend ports:
 #beanstalk_port_mappings = [
 #  {
