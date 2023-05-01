@@ -11,7 +11,7 @@ on:
     paths:
       - OWNERS
 
-concurrency: environment-awseb-v2
+concurrency: owners-environment-awseb-v2
 
 jobs:
   process-owners:
