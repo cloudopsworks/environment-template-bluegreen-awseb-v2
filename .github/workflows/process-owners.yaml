@@ -76,7 +76,7 @@ jobs:
             const reviewers_count = ${{ steps.reviewers_count.outputs.result }};
             const actor = context.actor;
             
-            # Get reviewers list
+            // Get reviewers list
             var reviewers = [];
             for ( const rev of reviewers_json ) {
               if ( actor != rev ) {
@@ -84,7 +84,7 @@ jobs:
               }
             };
 
-            # Protect the Branch
+            // Protect the Branch
             github.repos.updateBranchProtection({
               owner: context.repo.owner,
               repo: context.repo.repo,
