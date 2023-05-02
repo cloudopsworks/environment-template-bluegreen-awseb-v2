@@ -116,10 +116,16 @@ jobs:
                   break;
                 }
               }
+              for (const aUser of reviewers ) {
+                if( aUser.login == author ) {
+                  is_approved = true;
+                  break;
+                }
+              }
             } else {
               const message = `Proceed with next step for Blue/Green deployment.
               Submit: */approve|/lgtm|/approved* in order to continue with next step of Blue/Green Deployment.`;
-              
+            
               github.rest.issues.createComment({
                 issue_number: pull_request_number,
                 owner: context.repo.owner,
@@ -178,7 +184,7 @@ jobs:
             } else {
               const message = `Approval conditions of Blue/Green Deployment not invalid.
               Check if there was any error on the Validations.
-              
+            
               Submit: */approve|/lgtm|/approved* in order to continue with next step of Blue/Green Deployment.`;
             
               github.rest.issues.createComment({
