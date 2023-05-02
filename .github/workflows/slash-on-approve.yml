@@ -135,12 +135,12 @@ jobs:
                 reviewer_names.push(aUser.login);
               }
 
-              github.rest.pulls.removeRequestedReviewers({
-                pull_number: pull_request_number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                reviewers: reviewer_names
-              });
+              //github.rest.pulls.removeRequestedReviewers({
+              //  pull_number: pull_request_number,
+              //  owner: context.repo.owner,
+              //  repo: context.repo.repo,
+              //  reviewers: reviewer_names
+              //});
 
               github.rest.issues.removeLabel({
                 issue_number: pull_request_number,
