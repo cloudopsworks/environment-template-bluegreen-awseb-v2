@@ -10,12 +10,15 @@ Environment Template for AWS ElasticBeanstalk based apps with Blue-Green strateg
    1. [Configuring Backend](#configuring-backend)
    2. [Environment Variables for deployment automation](#environment-variables-for-deployment-automation)
    3. [Create OWNERS file](#create-owners-file)
-4. [Pull Request 2nd Day](#pull-request-2nd-day)
+4. [Promotions / Pull Request Approval Process](#promotions--pull-request-approval-process)
+   1. [1st Step](#1st-step)
+   2. [Approvals](#approvals)
+5. [Pull Request 2nd Day](#pull-request-2nd-day)
    1. [Configuration Changes](#configuration-changes)
 
 ## Procedure Flow:
 ```
-/promote (from app repos) --> /green-to-prod --> /approved
+/promote (from app repos) --> /green-to-prod --> ( Manual Git Approval ) /approved
                   ^                            |
                   |                            |
                   `-------- /rollback <--------'
@@ -99,7 +102,26 @@ you have to copy current `OWNERS_template` to `OWNERS
 * Push changes to Master ...
 * Proceed with Promotion Process.
 
-### (TBD) More documentation to be added soon.
+## Promotions / Pull Request Approval Process
+### 1st step
+* After successful processing of workflow, you will obtain the enabled URLS and environment in the comments of the Pull Request.
+* All Checks Must be green in order to proceed with the promotion.
+* If you want to promote the environment, you have to comment the following:
+  ```
+  /green-to-prod
+  ```
+* The successful execution of this command will output the following:
+  * A comment with the title "Changes Reconciled"
+  * A comment with the title "Application Deployment information"
+* After this is complete you are ready to proceed with Github Review Approval
+### Approvals
+* Requirement:
+  * Access to the GitHub Repository via Web https://github.com
+  * CLI (gh) installed and configured to proceed to the approval.
+* With the CLI Run the following command:
+  ```shell
+  gh pr review <PR#> --approve --comment "/approved"
+  ```
 
 ## Pull Request 2nd Day
 On each values changes, push into the branch and create a pull request against master branch.~~~~
