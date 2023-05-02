@@ -1,17 +1,18 @@
 ##
-# (c) 2022 - Cloud Ops Works LLC - https://cloudops.works/
+# (c) 2023 - Cloud Ops Works LLC - https://cloudops.works/
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
-name: Environment Plan on Pull request
+name: Configuration Change Re-Hash on Pull request
 on:
   pull_request:
     types:
       - synchronize
     paths:
       - values/**/*
+      - values/*
 
-concurrency: environment-awseb-v2
+concurrency: hash-environment-awseb-v2
 
 permissions:
   contents: write
@@ -30,6 +31,7 @@ jobs:
         with:
           token: ${{ secrets.BOT_TOKEN }}
           fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Update Hash
         run: make update
@@ -39,6 +41,5 @@ jobs:
         with:
           default_actor: github_actions
           message: "chore: Update config Hash."
-          add: "values/**/*"
-          pull: "--rebase"
+          add: "values/**/* .values_hash_*"
           push: true
