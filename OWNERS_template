@@ -22,12 +22,12 @@ requiredReviewers: 1
 # Optional only needed if not automatic or protection is true
 reviewers:
   - elasticguru-bot
-  - cloudopswork-dev
+  - cloudopsworks-dev
 
 # Optional Only needed for permit owners to perform commits under protected branches.
 #owners:
 #  - elasticguru-bot
-#  - cloudopswork-dev
+#  - cloudopsworks-dev
 
 # Optional configure the repository members
 #contributors:
