@@ -23,11 +23,14 @@ requiredReviewers: 1
 reviewers:
   - elasticguru-bot
   - cloudopsworks-dev
+  - cloudopsworks/engineering
 
 # Optional Only needed for permit owners to perform commits under protected branches.
+# Teams are specified as org/team-name
 #owners:
 #  - elasticguru-bot
 #  - cloudopsworks-dev
+#  - cloudopsworks/admin
 
 # Optional configure the repository members
 #contributors:

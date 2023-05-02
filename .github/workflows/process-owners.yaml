@@ -102,9 +102,15 @@ jobs:
             };
             
             // Get owners list
-            var owners = []
+            var owners = [];
+            var owner_teams = [];
             for( const owner of owners_json ) {
-                owners.push(owner);
+              if ( owner.includes("/") ) {
+                  team = owner.split("/");
+                  owner_teams.push(team[1]);
+                } else {
+                  owners.push(owner);
+                }
             };
 
             // Protect the Branch
@@ -127,12 +133,12 @@ jobs:
                 required_approving_review_count: reviewers_count,
                 bypass_pull_request_allowances: {
                   users: owners,
-                  teams: []
+                  teams: owner_teams
                 }
               },
               restrictions: {
                 users: owners,
-                teams: []
+                teams: owner_teams
               },
               allow_force_pushes: false,
               allow_deletions: false,
