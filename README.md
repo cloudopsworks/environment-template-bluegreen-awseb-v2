@@ -120,7 +120,7 @@ you have to copy current `OWNERS_template` to `OWNERS
   * CLI (gh) installed and configured to proceed to the approval.
 * With the CLI Run the following command:
   ```shell
-  gh pr review <PR#> --approve --comment "/approved"
+  gh pr review <PR#> -a -c --body "/approved"
   ```
 
 ## Pull Request 2nd Day
