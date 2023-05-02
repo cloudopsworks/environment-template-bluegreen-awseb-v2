@@ -41,7 +41,9 @@ beanstalk_enable_spot          = true
 beanstalk_default_retention    = 90
 beanstalk_instance_volume_size = 10
 beanstalk_instance_volume_type = "gp2"
-#beanstalk_instance_profile     = "aws-elasticbeanstalk-ec2-role"
+#beanstalk_min_instances        = 1
+#beanstalk_max_instances        = 1
+#beanstalk_instance_profile      = "aws-elasticbeanstalk-ec2-role"
 #beanstalk_service_role         = "aws-elasticbeanstalk-service-role"
 
 ##

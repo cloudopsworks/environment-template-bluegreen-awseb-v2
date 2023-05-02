@@ -63,6 +63,18 @@ variable "beanstalk_service_role" {
   default     = null
 }
 
+variable "beanstalk_min_instances" {
+  type        = number
+  description = "(optional) Minimum number of instances to run in the environment. Default: 1"
+  default     = 1
+}
+
+variable "beanstalk_max_instances" {
+  type        = number
+  description = "(optional) Maximum number of instances to run in the environment. Default: 1"
+  default     = 1
+}
+
 variable "beanstalk_port_mappings" {
   type        = list(any)
   default     = []

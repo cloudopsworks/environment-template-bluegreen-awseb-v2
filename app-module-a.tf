@@ -82,6 +82,8 @@ module "beanstalk_app_a" {
   beanstalk_instance_volume_type = var.beanstalk_instance_volume_type
   beanstalk_instance_profile     = var.beanstalk_instance_profile
   beanstalk_service_role         = var.beanstalk_service_role
+  beanstalk_min_instances        = var.beanstalk_min_instances
+  beanstalk_max_instances        = var.beanstalk_max_instances
 
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
