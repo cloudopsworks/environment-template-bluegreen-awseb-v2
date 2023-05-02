@@ -80,22 +80,23 @@ jobs:
             const branchProtectionRules = ${{ steps.branch_protection_rules.outputs.result }};
             const protectedSources = JSON.parse('${{ steps.protected_sources.outputs.result }}');
             const reviewers_json = JSON.parse('${{ steps.reviewers_list.outputs.result }}');
-            const owners_json = JSON.parse('${{ steps.owners_list.outputs.result }}');
+            const owners_text = ${{ steps.owners_list.outputs.result }};
+            const owners_json = owners_text != null ? JSON.parse('${{ steps.owners_list.outputs.result }}') : [];
             const reviewers_count = ${{ steps.reviewers_count.outputs.result }};
             const actor = context.actor;
             
             // Get reviewers list
             var reviewers = [];
             for ( const rev of reviewers_json ) {
-              if ( actor != rev ) {
-                reviewers.push(rev);
-              }
+                if ( actor != rev ) {
+                    reviewers.push(rev);
+                }
             };
             
             // Get owners list
             var owners = []
             for( const owner of owners_json ) {
-              owners.push(owner);
+                owners.push(owner);
             };
 
             // Protect the Branch
@@ -106,22 +107,23 @@ jobs:
               required_status_checks: {
                 strict: true,
                 checks: [
-                  {context: "bluegreen" },
-                  {context: "plan" },
-                  {context: "deploy" }                   
+                  { context: "bluegreen" },
+                  { context: "plan" },
+                  { context: "deploy" }
                 ]
               },
-              enforce_admins: true,
+              enforce_admins: false,
               required_pull_request_reviews: {
                 dismiss_stale_reviews: false,
                 require_code_owner_reviews: false,
                 required_approving_review_count: reviewers_count,
                 bypass_pull_request_allowances: {
-                    users: owners,
-                    teams: []
+                  users: owners
                 }
               },
-              restrictions: null,
+              restrictions: {
+                users: owners
+              },
               allow_force_pushes: false,
               allow_deletions: false,
               required_linear_history: true,
