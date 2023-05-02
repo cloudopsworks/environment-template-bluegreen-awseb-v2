@@ -52,19 +52,26 @@ jobs:
       - name: Reviewers Count
         uses: mikefarah/yq@v4.33.3
         id: reviewers_count
-        if: ${{ steps.check_automatic.outputs.result == 0 }}
+        if: ${{ steps.check_automatic.outputs.result == 0 || steps.branch_protection_rules.outputs.result == 1 }}
         with:
           cmd: yq '.requiredReviewers' OWNERS
 
       - name: Reviewers list as JSON
         uses: mikefarah/yq@v4.33.3
         id: reviewers_list
-        if: ${{ steps.check_automatic.outputs.result == 0 }}
+        if: ${{ steps.check_automatic.outputs.result == 0 || steps.branch_protection_rules.outputs.result == 1 }}
         with:
           cmd: yq -o=json -I=0 '.reviewers' OWNERS
 
+      - name: Owners list as JSON
+        uses: mikefarah/yq@v4.33.3
+        id: owners_list
+        if: ${{ steps.check_automatic.outputs.result == 0 || steps.branch_protection_rules.outputs.result == 1 }}
+        with:
+          cmd: yq -o=json -I=0 '.owners' OWNERS
+
       - name: Protect Branch
-        if: ${{ steps.branch_protection_rules.outputs.result == 1 && steps.check_automatic.outputs.result == 0 }}
+        if: ${{ steps.branch_protection_rules.outputs.result == 1 || steps.check_automatic.outputs.result == 0 }}
         uses: actions/github-script@v6
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
@@ -73,6 +80,7 @@ jobs:
             const branchProtectionRules = ${{ steps.branch_protection_rules.outputs.result }};
             const protectedSources = JSON.parse('${{ steps.protected_sources.outputs.result }}');
             const reviewers_json = JSON.parse('${{ steps.reviewers_list.outputs.result }}');
+            const owners_json = JSON.parse('${{ steps.owners_list.outputs.result }}');
             const reviewers_count = ${{ steps.reviewers_count.outputs.result }};
             const actor = context.actor;
             
@@ -82,6 +90,12 @@ jobs:
               if ( actor != rev ) {
                 reviewers.push(rev);
               }
+            };
+            
+            // Get owners list
+            var owners = []
+            for( const owner of owners_json ) {
+              owners.push(owner);
             };
 
             // Protect the Branch
@@ -99,9 +113,13 @@ jobs:
               },
               enforce_admins: true,
               required_pull_request_reviews: {
-                dismiss_stale_reviews: true,
+                dismiss_stale_reviews: false,
                 require_code_owner_reviews: false,
-                required_approving_review_count: reviewers_count
+                required_approving_review_count: reviewers_count,
+                bypass_pull_request_allowances: {
+                    users: owners,
+                    teams: []
+                }
               },
               restrictions: null,
               allow_force_pushes: false,
