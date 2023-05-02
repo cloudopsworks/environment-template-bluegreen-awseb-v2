@@ -28,3 +28,14 @@ reviewers:
 #owners:
 #  - elasticguru-bot
 #  - cloudopswork-dev
+
+# Optional configure the repository members
+#contributors:
+#  admin:
+#    - cloudopsworks/admin
+#  triage: []
+#  read: []
+#  write:
+#    - cloudopsworks/engineering
+#  maintain: []
+#
