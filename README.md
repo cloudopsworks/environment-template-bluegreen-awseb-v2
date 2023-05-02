@@ -118,6 +118,9 @@ you have to copy current `OWNERS_template` to `OWNERS
 * Requirement:
   * Access to the GitHub Repository via Web https://github.com
   * CLI (gh) installed and configured to proceed to the approval.
+* With UI proceed this way:
+  * Perform the Review of the Pull Request, clicking on the banner on the top of the Pull Request
+  * In the Review section, select the Approve option, and write `/approved` in the comment section.
 * With the CLI Run the following commands
   * Approve the Pull Request
     ```shell
