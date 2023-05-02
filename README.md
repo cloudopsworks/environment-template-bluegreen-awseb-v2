@@ -118,10 +118,15 @@ you have to copy current `OWNERS_template` to `OWNERS
 * Requirement:
   * Access to the GitHub Repository via Web https://github.com
   * CLI (gh) installed and configured to proceed to the approval.
-* With the CLI Run the following command:
-  ```shell
-  gh pr review <PR#> -a -c --body "/approved"
-  ```
+* With the CLI Run the following commands
+  * Approve the Pull Request
+    ```shell
+    gh pr review <PR#> --approved
+    ```
+  * Comment the Pull request with /approved to evaluate merge
+    ```shell
+    gh pr comment <PR#> --body "/approved"
+    ```
 
 ## Pull Request 2nd Day
 On each values changes, push into the branch and create a pull request against master branch.~~~~
