@@ -84,6 +84,12 @@ jobs:
               repo: context.repo.repo,
               pull_number: pull_request_number
             });
+            
+            const {data: reviews} = await github.rest.pulls.listReviews({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pull_request_number
+            });
 
             var is_approved = false;
 
@@ -104,8 +110,8 @@ jobs:
             }
 
             if ( proceed_with_users ) {
-              for (const aUser of reviewers.users ) {
-                if( aUser.login == author ) {
+              for (const aReview of reviews ) {
+                if( aReview.user.login == author && aReview.state == 'APPROVED' ) {
                   is_approved = true;
                   break;
                 }
