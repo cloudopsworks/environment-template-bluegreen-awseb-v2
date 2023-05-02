@@ -34,8 +34,9 @@ reviewers:
 #  admin:
 #    - cloudopsworks/admin
 #  triage: []
-#  read: []
-#  write:
+#  pull:
+#    - user1
+#  push:
 #    - cloudopsworks/engineering
 #  maintain: []
 #
