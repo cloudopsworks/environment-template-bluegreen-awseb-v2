@@ -105,9 +105,13 @@ init: init-template
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/default_bucket_prefix[ \t]*=.*/default_bucket_prefix = \"$(CURR)\"/" terraform.tfvars
 	sed -i "" -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars
+	cp backend.tf_template backend.tf
+	cp OWNERS_template OWNERS
 else ifeq ($(OS),Linux)
 	sed -i -e "s/default_bucket_prefix[ \t]*=.*/default_bucket_prefix = \"$(CURR)\"/" terraform.tfvars
 	sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars
+	cp backend.tf_template backend.tf
+	cp OWNERS_template OWNERS
 else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
