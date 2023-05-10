@@ -99,8 +99,32 @@ you have to copy current `OWNERS_template` to `OWNERS
     - user2
     - user3
   ```
+* When branch protection is enabled, you can configure the owners that can bypass the protection rules:
+  the entry is required and the users are listed as GitHub Ids, teams can be specified by org/team-name.
+  ```yaml
+  owners:
+    - user1
+    - user2
+    - user3
+    - org1/team1
+  ```
+* You can setup forefront the contributors list and their role with the repository.
+  This automates the way roles are assigned to the repo.
+  It is preferred to have list of groups instead of users.
+  To leave a role empty just indicate the empty list `[]`.
+  ```yaml
+  contributors:
+  admin:
+    - org1/admins1
+  triage: []
+  read: []
+  write:
+    - org1/devs1
+  maintain: []
+  ```
 * Push changes to Master ...
 * Proceed with Promotion Process.
+
 
 ## Promotions / Pull Request Approval Process
 ### 1st step
