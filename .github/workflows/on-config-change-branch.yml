@@ -3,11 +3,14 @@
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
-name: Configuration Change Re-Hash on Pull request
+name: Configuration Change Re-Hash on Specific branches
 on:
-  pull_request:
-    types:
-      - synchronize
+  push:
+    branches:
+      - main
+      - master
+      - config*
+      - devel*
     paths:
       - values/**/*
       - values/*
@@ -31,7 +34,6 @@ jobs:
         with:
           token: ${{ secrets.BOT_TOKEN }}
           fetch-depth: 0
-          ref: ${{ github.event.pull_request.head.ref }}
 
       - name: Update Hash
         run: make update

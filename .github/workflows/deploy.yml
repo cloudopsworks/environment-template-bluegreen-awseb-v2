@@ -6,12 +6,17 @@ name: Environment Deploy
 on:
   push:
     branches:
+      - main
       - master
+      - devel*
     paths-ignore:
-      - ".github/workflows/**"
-      - "modules/**"
-      - ".beacon"
-      - ".destroy"
+      - .github/workflows/**
+      - modules/**
+      - .beacon
+      - .destroy
+      - OWNERS*
+      - README.md
+      - values/**
 
 concurrency: environment-awseb-v2
 
