@@ -48,9 +48,13 @@ module "app_version_b" {
   # force_source_compressed = true
   # source_compressed_type  = "zip"
 
-  application_versions_bucket = module.versions_bucket.s3_bucket_id
+  application_versions_bucket = local.application_versions_bucket
 
   beanstalk_application = var.beanstalk_application
+
+  depends_on = [
+    module.versions_bucket
+  ]
 }
 
 module "beanstalk_app_b" {
