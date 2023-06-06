@@ -205,7 +205,7 @@ jobs:
       # Run Terraform Plan to validate all changes
       - name: Terraform Plan
         id: plan
-        run: terraform plan -no-color -out ./.plans/plan.out
+        run: terraform plan -no-color -input=false -out ./.plans/plan.out
         continue-on-error: ${{ needs.plan.outputs.auto_approve != 'true' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TF_AWS_ACCESS_KEY_ID }}
