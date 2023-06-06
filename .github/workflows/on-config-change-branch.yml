@@ -15,7 +15,9 @@ on:
       - values/**/*
       - values/*
 
-concurrency: hash-environment-awseb-v2
+concurrency:
+  group: hash-environment-awseb-v2
+  cancel-in-progress: false
 
 permissions:
   contents: write

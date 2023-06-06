@@ -15,7 +15,9 @@ on:
       - '.beacon'
       - '.destroy'
 
-concurrency: environment-awseb-v2
+concurrency:
+  group: environment-awseb-v2
+  cancel-in-progress: false
 
 permissions:
   contents: read
