@@ -123,9 +123,7 @@ jobs:
                 checks: [
                   { context: "bluegreen" },
                   { context: "plan" },
-                  { context: "deploy" },
-                  { context: "force-trafic-switch" },
-                  { context: "approve" }
+                  { context: "deploy" }
                 ]
               },
               enforce_admins: false,
