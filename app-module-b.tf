@@ -43,10 +43,9 @@ module "app_version_b" {
   config_source_folder = "values/${var.release_name}"
   config_hash_file     = "${path.root}/.values_hash_b"
   bluegreen_identifier = "b"
-  # Uncomment below to override the default source for the solution stack
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
-  # force_source_compressed = true
-  # source_compressed_type  = "zip"
+  force_source_compressed = var.source_force_compressed
+  source_compressed_type  = var.source_compressed_type
 
   application_versions_bucket = local.application_versions_bucket
 

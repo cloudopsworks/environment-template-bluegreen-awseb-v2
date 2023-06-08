@@ -49,5 +49,5 @@ variable "source_force_compressed" {
 variable "source_compressed_type" {
   type        = string
   description = "(optional) The type of the source package. Default is null."
-  default     = null
+  default     = "zip"
 }
