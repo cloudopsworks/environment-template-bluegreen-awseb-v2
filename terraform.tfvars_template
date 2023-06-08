@@ -46,6 +46,11 @@ beanstalk_instance_volume_type = "gp2"
 #beanstalk_instance_profile      = "aws-elasticbeanstalk-ec2-role"
 #beanstalk_service_role         = "aws-elasticbeanstalk-service-role"
 
+# Uncomment below to override the default source for the solution stack
+#   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
+#source_force_update = true
+#source_compressed_type = "zip"
+
 ##
 # Load Balancing Configuration
 load_balancer_public             = false

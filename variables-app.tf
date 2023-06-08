@@ -39,3 +39,15 @@ variable "solution_stack" {
 Or explicity name the complete stack available from AWS, to prevent undesired stack upgrades.
 EOF
 }
+
+variable "source_force_compressed" {
+  type        = bool
+  description = "(optional) Force to treat the source package to be compressed type. Default is false."
+  default     = false
+}
+
+variable "source_compressed_type" {
+  type        = string
+  description = "(optional) The type of the source package. Default is null."
+  default     = null
+}
