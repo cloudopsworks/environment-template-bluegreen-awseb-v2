@@ -48,7 +48,7 @@ beanstalk_instance_volume_type = "gp2"
 
 # Uncomment below to override the default source for the solution stack
 #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
-#source_force_update = true
+#source_force_compressed = true
 #source_compressed_type = "zip"
 
 ##
