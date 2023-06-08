@@ -38,11 +38,22 @@ module.tf:
 
 checkbluegreen:
 	$(info "BlueGreen Check")
+ifeq ($(OS),Darwin)
+	@if [ ! -f .bluegreen_state ] ; then \
+		echo "a" > .bluegreen_state ; \
+		sed -i "" -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars ; \
+		sed -i "" -e "s/deployment_a_deactivated[ \t]*=.*/deployment_a_deactivated = false/g" terraform.tfvars ; \
+	fi
+else ifeq ($(OS),Linux)
 	@if [ ! -f .bluegreen_state ] ; then \
 		echo "a" > .bluegreen_state ; \
 		sed -i -e "s/deployment_traffic[ \t]*=.*/deployment_traffic = \"a\"/g" terraform.tfvars ; \
 		sed -i -e "s/deployment_a_deactivated[ \t]*=.*/deployment_a_deactivated = false/g" terraform.tfvars ; \
 	fi
+else
+	echo "platfrom $(OS) not supported to release from"
+	exit -1
+endif
 
 .PHONY: state
 state:
