@@ -9,7 +9,7 @@ data "aws_route53_zone" "failover_app_domain" {
 }
 
 resource "aws_route53_record" "failover_record" {
-  count = var.failover_enabled && !(var.deployment_a_deactivated && var.deployment_a_deactivated) ? 1 : 0
+  count = var.failover_enabled && !var.app_domain_disabled && !(var.deployment_a_deactivated && var.deployment_a_deactivated) ? 1 : 0
 
   name    = format("%s.%s", var.failover_domain_alias, var.app_domain_name)
   type    = "A"
