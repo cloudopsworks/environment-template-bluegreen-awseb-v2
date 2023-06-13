@@ -79,6 +79,13 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 #failover_type         = "primary" # or "secondary"
 
 ##
+# Alarms Configurations - uncomment to activate
+#cloudwatch_alarm_enabled = true
+#cloudwatch_alarm_destination = "TOPIC NAME"
+#cloudwatch_alarm_threshold = 15
+
+
+##
 # Optional variable for adding extra tags to the environment
 # extra_tags = {
 #   "tag1" = "value1"
