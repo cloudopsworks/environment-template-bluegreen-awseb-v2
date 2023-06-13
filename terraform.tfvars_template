@@ -73,6 +73,12 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 #app_domain_ttl      = 3600
 
 ##
+# DNS Failover Configuration - uncomment to activate
+#failover_enabled      = true
+#failover_domain_alias = "DOMAIN NAME ALIAS"
+#failover_type         = "primary" # or "secondary"
+
+##
 # Optional variable for adding extra tags to the environment
 # extra_tags = {
 #   "tag1" = "value1"

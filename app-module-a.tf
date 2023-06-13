@@ -12,7 +12,7 @@ module "app_dns_a" {
   count = !var.app_domain_disabled && !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
-  version         = "1.0.1"
+  version         = "1.0.2"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -22,7 +22,9 @@ module "app_dns_a" {
   domain_name_alias_prefix    = var.app_domain_alias
   domain_name_weight          = var.deployment_traffic == "a" ? 10 : 0
   default_domain_ttl          = var.app_domain_ttl
-  beanstalk_environment_cname = module.beanstalk_app_a.0.environment_cname
+  domain_alias                = true
+  beanstalk_environment_cname = module.beanstalk_app_b.0.load_balancer_address
+  beanstalk_zone_id           = module.beanstalk_app_b.0.load_balancer_zone_id
 }
 
 module "app_version_a" {
@@ -60,7 +62,7 @@ module "beanstalk_app_a" {
   count = !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.3"
+  version         = "1.0.4"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
