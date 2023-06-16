@@ -121,9 +121,9 @@ jobs:
               required_status_checks: {
                 strict: true,
                 checks: [
-                  { context: "plan/bluegreen" },
-                  { context: "plan/plan" },
-                  { context: "plan/deploy" }
+                  { context: "plan / bluegreen" },
+                  { context: "plan / plan" },
+                  { context: "plan / deploy" }
                 ]
               },
               enforce_admins: false,
