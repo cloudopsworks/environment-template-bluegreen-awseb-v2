@@ -32,3 +32,4 @@ jobs:
   # Job determines which label to apply
   plan:
     uses: ./.github/workflow/plan.yml
+    secrets: inherit
