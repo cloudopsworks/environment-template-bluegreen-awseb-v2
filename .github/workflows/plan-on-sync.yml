@@ -29,4 +29,4 @@ permissions:
 jobs:
   # Job determines which label to apply
   plan:
-    uses: ./github-actions/plan.yml
+    uses: ./.github-actions/plan.yml
