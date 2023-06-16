@@ -58,7 +58,10 @@ resource "aws_route53_health_check" "health_all" {
   child_health_threshold = 1
   child_healthchecks     = local.health_check_ids
 
-  tags = local.tags
+  tags = merge({
+    Name = format("HealthCheck-%s-%s-%s", var.region, var.release_name, var.namespace)
+    },
+  local.tags)
 }
 
 resource "aws_route53_health_check" "health_a" {
@@ -69,7 +72,10 @@ resource "aws_route53_health_check" "health_a" {
   cloudwatch_alarm_region         = var.region
   insufficient_data_health_status = "Unhealthy"
 
-  tags = local.tags
+  tags = merge({
+    Name = format("HealthCheck-%s-%s-%s-%s", var.region, var.release_name, var.namespace, "a")
+    },
+  local.tags)
 }
 
 resource "aws_route53_health_check" "health_b" {
@@ -80,5 +86,8 @@ resource "aws_route53_health_check" "health_b" {
   cloudwatch_alarm_region         = var.region
   insufficient_data_health_status = "Unhealthy"
 
-  tags = local.tags
+  tags = merge({
+    Name = format("HealthCheck-%s-%s-%s-%s", var.region, var.release_name, var.namespace, "b")
+    },
+  local.tags)
 }

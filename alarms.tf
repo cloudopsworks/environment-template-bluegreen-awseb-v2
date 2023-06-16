@@ -45,7 +45,7 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
 resource "aws_cloudwatch_metric_alarm" "metric_alarm_b" {
   count = !var.deployment_b_deactivated && var.cloudwatch_alarm_enabled ? 1 : 0
 
-  alarm_name          = format("MetricsAlarm-%s-%s-%s", var.release_name, var.namespace, "b")
+  alarm_name          = format("MetricsAlarm-%s-%s-%s-%s", var.region, var.release_name, var.namespace, "b")
   comparison_operator = "GreaterThanThreshold"
   statistic           = "Maximum"
   threshold           = var.cloudwatch_alarm_threshold
