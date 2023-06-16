@@ -18,12 +18,11 @@ resource "aws_route53_record" "failover_record" {
   failover_routing_policy {
     type = upper(var.failover_type)
   }
+  set_identifier = format("%s-%s-%s", var.release_name, var.namespace, var.region)
 
   alias {
     name                   = try(module.app_dns_a[0].fqdn, module.app_dns_b[0].fqdn, "")
     zone_id                = data.aws_route53_zone.failover_app_domain.id
     evaluate_target_health = true
   }
-
-  tags = local.tags
 }

@@ -6,23 +6,20 @@
 
 locals {
   tags = merge(var.extra_tags, {
-    Environment = format("%s-%s-%s", var.release_name)
+    Environment = format("%s-%s", var.release_name, var.namespace)
     Namespace   = var.namespace
     Release     = var.release_name
   })
 }
 
-data "aws_sns_topic" "alarm_destination_topic" {
-  count = var.cloudwatch_alarm_enabled ? 1 : 0
-
+data "aws_sns_topic" "topic_destination" {
   name = var.cloudwatch_alarm_destination
 }
-
 
 resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
   count = !var.deployment_a_deactivated && var.cloudwatch_alarm_enabled ? 1 : 0
 
-  alarm_name          = format("MetricsAlarm-%s-%s-%s", var.release_name, var.namespace, "a")
+  alarm_name          = format("MetricsAlarm-%s-%s-%s-%s", var.region, var.release_name, var.namespace, "a")
   comparison_operator = "GreaterThanThreshold"
   statistic           = "Maximum"
   threshold           = var.cloudwatch_alarm_threshold
@@ -32,10 +29,9 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
   metric_name         = "EnvironmentHealth"
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment A"
   actions_enabled     = true
-  alarm_actions {
-    type = "SNS"
-    arn  = data.aws_sns_topic.alarm_destination_topic[0].arn
-  }
+  alarm_actions = [
+    data.aws_sns_topic.topic_destination.arn
+  ]
   dimensions = {
     EnvironmentName = module.beanstalk_app_a[0].environment_name
   }
@@ -56,10 +52,9 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_b" {
   metric_name         = "EnvironmentHealth"
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment B"
   actions_enabled     = true
-  alarm_actions {
-    type = "SNS"
-    arn  = data.aws_sns_topic.alarm_destination_topic[0].arn
-  }
+  alarm_actions = [
+    var.cloudwatch_alarm_destination
+  ]
   dimensions = {
     EnvironmentName = module.beanstalk_app_b[0].environment_name
   }

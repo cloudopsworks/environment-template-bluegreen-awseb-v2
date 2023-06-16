@@ -12,19 +12,19 @@ module "app_dns_b" {
   count = !var.app_domain_disabled && !var.deployment_b_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
-  version         = "1.0.2"
+  version         = "1.0.3"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name                = var.release_name
-  namespace                   = format("%s-%s", var.namespace, "b")
-  domain_name                 = var.app_domain_name
-  domain_name_alias_prefix    = var.app_domain_alias
-  domain_name_weight          = var.deployment_traffic == "b" ? 10 : 0
-  default_domain_ttl          = var.app_domain_ttl
-  domain_alias                = true
-  beanstalk_environment_cname = module.beanstalk_app_b.0.load_balancer_address
-  beanstalk_zone_id           = module.beanstalk_app_b.0.load_balancer_zone_id
+  release_name             = var.release_name
+  namespace                = format("%s-%s", var.namespace, "b")
+  domain_name              = var.app_domain_name
+  domain_name_alias_prefix = var.app_domain_alias
+  domain_name_weight       = var.deployment_traffic == "b" ? 10 : 0
+  default_domain_ttl       = var.app_domain_ttl
+  domain_alias             = true
+  alias_cname              = module.beanstalk_app_b[0].environment_cname
+  alias_zone_id            = module.beanstalk_app_b[0].environment_zone_id
 }
 
 module "app_version_b" {
@@ -62,14 +62,14 @@ module "beanstalk_app_b" {
   count = !var.deployment_b_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.4"
+  version         = "1.0.5"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
   release_name              = var.release_name
   namespace                 = format("%s-%s", var.namespace, "b")
   solution_stack            = var.solution_stack
-  application_version_label = module.app_version_b.0.application_version_label
+  application_version_label = module.app_version_b[0].application_version_label
 
   private_subnets = var.private_subnets
   public_subnets  = var.public_subnets
