@@ -31,5 +31,5 @@ permissions:
 jobs:
   # Job determines which label to apply
   plan:
-    uses: ./.github/workflow/plan.yml
+    uses: ./.github/workflows/plan.yml
     secrets: inherit
