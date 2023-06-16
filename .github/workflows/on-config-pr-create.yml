@@ -35,8 +35,17 @@ jobs:
           fetch-depth: 0
           ref: ${{ github.event.pull_request.head.ref }}
 
+      # Installs Terraform
+      - uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.3.3
+
       - name: Treat the PR as a promotion
         run: make promote
+
+      # Do Tidy on terraform Files
+      - name: Terraform tidy up
+        run: terraform fmt
 
       - name: Push change to Branch
         uses: EndBug/add-and-commit@v9
