@@ -7,7 +7,7 @@ name: Automatic promotion Process Detection on Pull request
 on:
   pull_request:
     types:
-      - create
+      - opened
     branches-ignore:
       - promote-*
 
