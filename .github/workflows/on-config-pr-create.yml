@@ -1,0 +1,47 @@
+##
+# (c) 2023 - Cloud Ops Works LLC - https://cloudops.works/
+#            On GitHub: https://github.com/cloudopsworks
+#            Distributed Under Apache v2.0 License
+#
+name: Configuration Change Re-Hash on Pull request
+on:
+  pull_request:
+    types:
+      - create
+    branches-ignore:
+      - promote-*
+
+
+concurrency:
+  group: hash-environment-awseb-v2
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+  statuses: write
+  pull-requests: write
+  issues: write
+  checks: write
+
+jobs:
+  update-hash:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout on pull request
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.BOT_TOKEN }}
+          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Treat the PR as a promotion
+        run: make promote
+
+      - name: Push change to Branch
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_actor: github_actions
+          message: "chore: Treat this PR as an environment promotion."
+          add: "**/*"
+          push: true

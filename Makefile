@@ -146,6 +146,13 @@ config: checkbluegreen state bgstate
 	@read -p "Enter Branch Name (no spaces):" the_branch ; \
 	git checkout -b config-$${the_branch} ; \
 	git push -u origin config-$${the_branch}
+
+
+update: checkbluegreen state bgstate
+	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(BLUEGREEN_STATE)
+
+
+promote: checkbluegreen state bgstate
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/deployment_$(NEW_BG_STATE)_deactivated[ \t]*=.*/deployment_$(NEW_BG_STATE)_deactivated = false/g" terraform.tfvars
 	ver=$$(grep "app_version_$(BLUEGREEN_STATE)" terraform.tfvars | cut -d '=' -f 2- | tr -d ' "') ; \
@@ -160,35 +167,6 @@ else
 endif
 	echo "$(NEW_BG_STATE)" > .bluegreen_state
 	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(NEW_BG_STATE)
-
-
-update: checkbluegreen state bgstate
-	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(BLUEGREEN_STATE)
-
-
-promote:
-ifeq ($(OS),Darwin)
-	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
-	if [ "$$green_server_version" = "a" ] ; then \
-	  green_server_version="b" ; \
-	else \
-	  green_server_version="a" ; \
-	fi ; \
-	sed -i "" -e "s/deployment_$${green_server_version}_deactivated[ \t]*=.*/deployment_$${green_server_version}_deactivated = false/g" terraform.tfvars ; \
-	echo "$$green_server_version" > .bluegreen_state
-else ifeq ($(OS),Linux)
-	green_server_version=$$(head -n 1 .bluegreen_state | head -c 1) ; \
-	if [ "$$green_server_version" = "a" ] ; then \
-	  green_server_version="b" ; \
-	else \
-	  green_server_version="a" ; \
-	fi ; \
-	sed -i -e "s/deployment_$${green_server_version}_deactivated[ \t]*=.*/deployment_$${green_server_version}_deactivated = false/g" terraform.tfvars ; \
-	echo "$$green_server_version" > .bluegreen_state
-else
-	echo "platfrom $(OS) not supported to release from"
-	exit -1
-endif
 
 
 green-to-prod:
