@@ -43,5 +43,5 @@ jobs:
         with:
           default_actor: github_actions
           message: "chore: Treat this PR as an environment promotion."
-          add: "**/*"
+          add: "terraform.tfvars .bluegreen_* .values_hash_*"
           push: true
