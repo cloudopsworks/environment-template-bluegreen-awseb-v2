@@ -1,31 +1,11 @@
 ## 
-# (c) 2022 - Cloud Ops Works LLC - https://cloudops.works/
+# (c) 2023 - Cloud Ops Works LLC - https://cloudops.works/
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
 name: Environment Plan on Pull request
 on:
-  pull_request:
-    types:
-      - opened
-      - synchronize
-    paths-ignore:
-      - '.github/workflows/**'
-      - 'modules/**'
-      - '.beacon'
-      - '.destroy'
-
-concurrency:
-  group: environment-awseb-v2
-  cancel-in-progress: false
-
-permissions:
-  contents: read
-  packages: write
-  statuses: write
-  pull-requests: write
-  issues: write
-  checks: write
+  workflow_call:
 
 jobs:
   # Job determines which label to apply
