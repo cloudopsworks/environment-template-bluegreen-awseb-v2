@@ -53,7 +53,7 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_b" {
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment B"
   actions_enabled     = true
   alarm_actions = [
-    var.cloudwatch_alarm_destination
+    data.aws_sns_topic.topic_destination.arn
   ]
   dimensions = {
     EnvironmentName = module.beanstalk_app_b[0].environment_name
