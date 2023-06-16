@@ -29,6 +29,9 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
   metric_name         = "EnvironmentHealth"
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment A"
   actions_enabled     = true
+  ok_actions = [
+    data.aws_sns_topic.topic_destination.arn
+  ]
   alarm_actions = [
     data.aws_sns_topic.topic_destination.arn
   ]

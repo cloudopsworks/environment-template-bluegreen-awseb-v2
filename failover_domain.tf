@@ -38,7 +38,7 @@ resource "aws_route53_record" "failover_record_internal" {
     type = upper(var.failover_type)
   }
   set_identifier  = format("%s-%s-%s", var.release_name, var.namespace, var.region)
-  health_check_id = aws_route53_health_check.health_all.id
+  health_check_id = aws_route53_health_check.health_all[0].id
 
   alias {
     name                   = try(module.app_dns_a[0].fqdn, module.app_dns_b[0].fqdn, "")
@@ -48,7 +48,7 @@ resource "aws_route53_record" "failover_record_internal" {
 }
 
 locals {
-  health_check_ids = compact([can(aws_route53_health_check.health_a.id) ? aws_route53_health_check.health_a.id : null, can(aws_route53_health_check.health_b.id) ? aws_route53_health_check.health_b.id : null])
+  health_check_ids = compact([can(aws_route53_health_check.health_a[0].id) ? aws_route53_health_check.health_a[0].id : null, can(aws_route53_health_check.health_b[0].id) ? aws_route53_health_check.health_b[0].id : null])
 }
 
 resource "aws_route53_health_check" "health_all" {
@@ -57,22 +57,28 @@ resource "aws_route53_health_check" "health_all" {
   type                   = "CALCULATED"
   child_health_threshold = 1
   child_healthchecks     = local.health_check_ids
+
+  tags = local.tags
 }
 
 resource "aws_route53_health_check" "health_a" {
   count = var.failover_enabled && !var.app_domain_disabled && !var.deployment_a_deactivated && !var.load_balancer_public ? 1 : 0
 
   type                            = "CLOUDWATCH_METRIC"
-  cloudwatch_alarm_name           = aws_cloudwatch_metric_alarm.metric_alarm_a.alarm_name
+  cloudwatch_alarm_name           = aws_cloudwatch_metric_alarm.metric_alarm_a[0].alarm_name
   cloudwatch_alarm_region         = var.region
   insufficient_data_health_status = "Unhealthy"
+
+  tags = local.tags
 }
 
 resource "aws_route53_health_check" "health_b" {
   count = var.failover_enabled && !var.app_domain_disabled && !var.deployment_b_deactivated && !var.load_balancer_public ? 1 : 0
 
   type                            = "CLOUDWATCH_METRIC"
-  cloudwatch_alarm_name           = aws_cloudwatch_metric_alarm.metric_alarm_b.alarm_name
+  cloudwatch_alarm_name           = aws_cloudwatch_metric_alarm.metric_alarm_b[0].alarm_name
   cloudwatch_alarm_region         = var.region
   insufficient_data_health_status = "Unhealthy"
+
+  tags = local.tags
 }
