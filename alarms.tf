@@ -31,10 +31,10 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment A"
   actions_enabled     = true
   ok_actions = [
-    data.aws_sns_topic[0].topic_destination.arn
+    data.aws_sns_topic.topic_destination[0].arn
   ]
   alarm_actions = [
-    data.aws_sns_topic[0].topic_destination.arn
+    data.aws_sns_topic.topic_destination[0].arn
   ]
   dimensions = {
     EnvironmentName = module.beanstalk_app_a[0].environment_name
@@ -57,10 +57,10 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_b" {
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment B"
   actions_enabled     = true
   ok_actions = [
-    data.aws_sns_topic[0].topic_destination.arn
+    data.aws_sns_topic.topic_destination[0].arn
   ]
   alarm_actions = [
-    data.aws_sns_topic[0].topic_destination.arn
+    data.aws_sns_topic.topic_destination[0].arn
   ]
   dimensions = {
     EnvironmentName = module.beanstalk_app_b[0].environment_name
