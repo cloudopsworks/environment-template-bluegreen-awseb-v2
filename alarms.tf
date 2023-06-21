@@ -14,7 +14,7 @@ locals {
 
 data "aws_sns_topic" "topic_destination" {
   count = var.cloudwatch_alarm_enabled ? 1 : 0
-  name = var.cloudwatch_alarm_destination
+  name  = var.cloudwatch_alarm_destination
 }
 
 resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
