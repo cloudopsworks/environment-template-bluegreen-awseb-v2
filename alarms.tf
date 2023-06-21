@@ -24,8 +24,8 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_a" {
   comparison_operator = "GreaterThanThreshold"
   statistic           = "Maximum"
   threshold           = var.cloudwatch_alarm_threshold
-  period              = 120
-  evaluation_periods  = 2
+  period              = var.cloudwatch_alarm_period
+  evaluation_periods  = var.cloudwatch_alarm_evaluation_periods
   namespace           = "AWS/ElasticBeanstalk"
   metric_name         = "EnvironmentHealth"
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment A"
@@ -50,8 +50,8 @@ resource "aws_cloudwatch_metric_alarm" "metric_alarm_b" {
   comparison_operator = "GreaterThanThreshold"
   statistic           = "Maximum"
   threshold           = var.cloudwatch_alarm_threshold
-  period              = 120
-  evaluation_periods  = 2
+  period              = var.cloudwatch_alarm_period
+  evaluation_periods  = var.cloudwatch_alarm_evaluation_periods
   namespace           = "AWS/ElasticBeanstalk"
   metric_name         = "EnvironmentHealth"
   alarm_description   = "Metric Alarm for Beanstalk Application - Deployment B"

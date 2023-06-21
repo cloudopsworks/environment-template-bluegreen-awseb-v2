@@ -74,16 +74,19 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 
 ##
 # DNS Failover Configuration - uncomment to activate
+# NOTE: The failover will be created only if the app_domain_disabled is set to false
 #failover_enabled      = true
 #failover_domain_alias = "DOMAIN NAME ALIAS"
 #failover_type         = "primary" # or "secondary"
 
 ##
 # Alarms Configurations - uncomment to activate
+# NOTE: The alarm will be created only if the cloudwatch_alarm_enabled is set to true
 #cloudwatch_alarm_enabled = true
 #cloudwatch_alarm_destination = "TOPIC NAME"
 #cloudwatch_alarm_threshold = 15
-
+#cloudwatch_alarm_period = 120
+#cloudwatch_alarm_evaluation_periods = 2
 
 ##
 # Optional variable for adding extra tags to the environment
