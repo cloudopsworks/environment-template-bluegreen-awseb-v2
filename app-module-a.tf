@@ -25,7 +25,7 @@ module "app_dns_a" {
   domain_alias             = true
   alias_cname              = module.beanstalk_app_a[0].environment_cname
   alias_zone_id            = module.beanstalk_app_a[0].environment_zone_id
-  health_check_id          = try(aws_route53_health_check.health_a[0].id, "")
+  #health_check_id          = try(aws_route53_health_check.health_a[0].id, "")
 }
 
 module "app_version_a" {

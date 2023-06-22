@@ -43,7 +43,7 @@ resource "aws_route53_record" "failover_record_internal" {
   alias {
     name                   = try(module.app_dns_a[0].fqdn, module.app_dns_b[0].fqdn, "")
     zone_id                = data.aws_route53_zone.failover_app_domain.id
-    evaluate_target_health = false
+    evaluate_target_health = true
   }
 }
 
