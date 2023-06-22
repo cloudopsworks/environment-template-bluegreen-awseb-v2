@@ -12,7 +12,7 @@ module "app_dns_a" {
   count = !var.app_domain_disabled && !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
-  version         = "1.0.3"
+  version         = "1.0.4"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -25,6 +25,7 @@ module "app_dns_a" {
   domain_alias             = true
   alias_cname              = module.beanstalk_app_a[0].environment_cname
   alias_zone_id            = module.beanstalk_app_a[0].environment_zone_id
+  health_check_id          = try(aws_route53_health_check.health_a[0].id, "")
 }
 
 module "app_version_a" {
