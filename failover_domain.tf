@@ -52,7 +52,8 @@ locals {
 }
 
 resource "aws_route53_health_check" "health_all" {
-  count = var.failover_enabled && !var.app_domain_disabled && !(var.deployment_a_deactivated && var.deployment_b_deactivated) && !var.load_balancer_public ? 1 : 0
+  depends_on = [aws_route53_health_check.health_a, aws_route53_health_check.health_b]
+  count      = var.failover_enabled && !var.app_domain_disabled && !(var.deployment_a_deactivated && var.deployment_b_deactivated) && !var.load_balancer_public ? 1 : 0
 
   type                   = "CALCULATED"
   child_health_threshold = 1
