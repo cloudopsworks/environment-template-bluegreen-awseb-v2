@@ -8,9 +8,6 @@ on:
   pull_request:
     types:
       - opened
-    branches-ignore:
-      - promote-*
-
 
 concurrency:
   group: hash-environment-awseb-v2
@@ -26,6 +23,7 @@ permissions:
 
 jobs:
   update-hash:
+    if: !startsWith(github.head_ref, 'promote-')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout on pull request

@@ -13,8 +13,6 @@ on:
       - 'modules/**'
       - '.beacon'
       - '.destroy'
-    branches:
-      - promote-*
 
 concurrency:
   group: environment-awseb-v2
@@ -31,5 +29,6 @@ permissions:
 jobs:
   # Job determines which label to apply
   plan:
+    if: startsWith(github.head_ref, 'promote-')
     uses: ./.github/workflows/plan.yml
     secrets: inherit
