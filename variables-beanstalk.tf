@@ -103,3 +103,15 @@ variable "extra_settings" {
   default     = []
   description = "(optional) Extra ElasticBeanstalk Settings in AWS format."
 }
+
+variable "beanstalk_lb_sg" {
+  type        = list(any)
+  default     = []
+  description = "(optional) List of Security Groups to apply to the Load Balancer."
+}
+
+variable "beanstalk_target_sg" {
+  type        = list(any)
+  default     = []
+  description = "(optional) List of Security Groups to apply to the Target Group."
+}

@@ -130,6 +130,24 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 #  }
 #]
 
+##
+# Optional variable for adding custom security groups to the environment
+#beanstalk_lb_sg = [
+#  {
+#    from_port = 80
+#    to_port = 80
+#    protocol = "tcp"
+#    cidr_block = "0.0.0.0/0"
+#  }
+#]
+#beanstalk_target_sg = [
+#  {
+#    from_port = 80
+#    to_port = 80
+#    protocol = "tcp"
+#    cidr_block = "0.0.0.0/0"
+#  }
+#]
 
 ###################################################
 ######## MANAGED BY SCRIPTS - DO NOT EDIT #########

@@ -63,7 +63,7 @@ module "beanstalk_app_b" {
   count = !var.deployment_b_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.5"
+  version         = "1.0.6"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -90,6 +90,8 @@ module "beanstalk_app_b" {
   beanstalk_service_role         = var.beanstalk_service_role
   beanstalk_min_instances        = var.beanstalk_min_instances
   beanstalk_max_instances        = var.beanstalk_max_instances
+  beanstalk_lb_sg                = var.beanstalk_lb_sg
+  beanstalk_target_sg            = var.beanstalk_target_sg
 
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
