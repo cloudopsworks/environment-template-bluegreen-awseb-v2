@@ -90,6 +90,8 @@ module "beanstalk_app_a" {
   beanstalk_service_role         = var.beanstalk_service_role
   beanstalk_min_instances        = var.beanstalk_min_instances
   beanstalk_max_instances        = var.beanstalk_max_instances
+  beanstalk_lb_sg                = var.beanstalk_lb_sg
+  beanstalk_target_sg            = var.beanstalk_target_sg
 
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
