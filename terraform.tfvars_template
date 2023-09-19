@@ -25,6 +25,8 @@ versions_retention_years = 3
 #   java11    = "^64bit Amazon Linux 2 (.*) Corretto 11(.*)$"
 #   node      = "^64bit Amazon Linux 2 (.*) Node.js 12(.*)$"
 #   node14    = "^64bit Amazon Linux 2 (.*) Node.js 14(.*)$"
+#   node16    = "^64bit Amazon Linux 2 (.*) Node.js 16(.*)$"
+#   node18    = "^64bit Amazon Linux 2 (.*) Node.js 18(.*)$"
 #   go        = "^64bit Amazon Linux 2 (.*) Go (.*)$"
 #   docker    = "^64bit Amazon Linux 2 (.*) Docker (.*)$"
 #   docker-m  = "^64bit Amazon Linux 2 (.*) Multi-container Docker (.*)$"
@@ -43,6 +45,15 @@ beanstalk_instance_volume_size = 10
 beanstalk_instance_volume_type = "gp2"
 #beanstalk_min_instances        = 1
 #beanstalk_max_instances        = 1
+#beanstalk_scale_rule           = {
+#  trigger        = "network-out|network-in|cpu|latency|request-count|target-response-time|disk-w-ops|disk-r-ops|disk-w-bytes|disk-r-bytes"
+#  statistic      = "avg|min|max|sum"
+#  unit           = "sec|pct|bytes|bits|count|bytes-s|bits-s|count-s|none"
+#  up_threshold   = 6000000
+#  up_increment   = 1
+#  down_threshold = 6000000
+#  down_increment = -1
+#}
 #beanstalk_instance_profile      = "aws-elasticbeanstalk-ec2-role"
 #beanstalk_service_role         = "aws-elasticbeanstalk-service-role"
 

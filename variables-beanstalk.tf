@@ -115,3 +115,36 @@ variable "beanstalk_target_sg" {
   default     = []
   description = "(optional) List of Security Groups to apply to the Target Group."
 }
+
+variable "beanstalk_scale_rule" {
+  type = object({
+    trigger         = string, #"network-out|network-in|cpu|latency|request-count|target-response-time|disk-w-ops|disk-r-ops|disk-w-bytes|disk-r-bytes"
+    breach_duration = number,
+    statistic       = string, #"avg|min|max|sum"
+    unit            = string, #"sec|pct|bytes|bits|count|bytes-s|bits-s|count-s|none"
+    up_threshold    = number,
+    up_increment    = number,
+    down_threshold  = number,
+    down_increment  = number
+  })
+  default     = null
+  description = <<EOF
+(optional) Scale Rule to apply to the environment. Default: null.
+Is an object defined by this structure:
+{
+  trigger        = "network-out|network-in|cpu|latency|request-count|target-response-time|disk-w-ops|disk-r-ops|disk-w-bytes|disk-r-bytes"
+  statistic      = "avg|min|max|sum"
+  unit           = "sec|pct|bytes|bits|count|bytes-s|bits-s|count-s|none"
+  breach_duration = [number], defaults to 5
+  up_threshold   = [number], defaults to 6000000
+  up_increment   = [number], defaults to 1
+  down_threshold = [number], defaults to 2000000
+  down_increment = [number] defaults to -1
+}
+EOF
+
+  validation {
+    condition = var.beanstalk_scale_rule != null && (var.beanstalk_scale_rule.trigger && var.beanstalk_scale_rule.statistic != null && var.beanstalk_scale_rule.unit != null)
+    error_message = "beanstalk_scale_rule must be null or an object with the following structure: { trigger = string, statistic = string, unit = string, breach_duration = number, up_threshold = number, up_increment = number, down_threshold = number, down_increment = number }"
+  }
+}
