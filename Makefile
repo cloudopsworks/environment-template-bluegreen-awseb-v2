@@ -62,8 +62,9 @@ state:
 	$(eval BLUEGREEN_STATE = $(shell head -n 1 .bluegreen_state |head -c 1))
 #endif
 
+SOL_STACK := $(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '{print $$2}')
+
 version: VERSION checkbluegreen state module.tf
-SOL_STACK := "$(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '{print $$2}')"
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
 	sed -i "" -e "s/source_name[ \t]*=.*/source_name = \"$(CHART)\"/" terraform.tfvars
@@ -93,7 +94,6 @@ endif
 	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(BLUEGREEN_STATE)
 
 update-stack: checkbluegreen state module.tf
-SOL_STACK := "$(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '{print $$2}')"
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 else ifeq ($(OS),Linux)
