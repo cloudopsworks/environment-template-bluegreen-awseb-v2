@@ -167,11 +167,13 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 ##
 # Specific values regarding the environment, managed by scripts
 # (DO NOT TOUCH!)
-release_name         = "<RELEASE-NAME>"
-source_name          = "<CHART-NAME-ON-REPO"
-app_version_a        = "<VERSION_1>"
-app_version_b        = "<VERSION_1>"
-deployment_traffic   = "<a or b>"
+release_name       = "<RELEASE-NAME>"
+source_name        = "<CHART-NAME-ON-REPO"
+app_version_a      = "<VERSION_1>"
+app_version_b      = "<VERSION_1>"
+solution_stack_a   = "<SOLUTION_STACK>"
+solution_stack_b   = "<SOLUTION_STACK>"
+deployment_traffic = "<a or b>"
 
 ##
 # Deployment destruction control, managed by scripts.

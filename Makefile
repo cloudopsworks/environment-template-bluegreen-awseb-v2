@@ -63,6 +63,7 @@ state:
 #endif
 
 version: VERSION checkbluegreen state module.tf
+SOL_STACK := "$(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '{print $$2}')"
 ifeq ($(OS),Darwin)
 	sed -i "" -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
 	sed -i "" -e "s/source_name[ \t]*=.*/source_name = \"$(CHART)\"/" terraform.tfvars
@@ -70,6 +71,7 @@ ifeq ($(OS),Darwin)
 	sed -i "" -e "s/load_balancer_log_prefix[ \t]*=.*/load_balancer_log_prefix = \"$(TARGET)\"/" terraform.tfvars
 	sed -i "" -e "s/#load_balancer_alias[ \t]*=.*/#load_balancer_alias = \"$(TARGET)\-ingress\"/" terraform.tfvars
 	sed -i "" -e "s/app_version_$(BLUEGREEN_STATE)[ \t]*=.*/app_version_$(BLUEGREEN_STATE) = \"$(RELEASE_VERSION)\"/g" terraform.tfvars
+	sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 	@if [ "$(PLATFORM)" != "" ] ; then \
 		sed -i "" -e "s/SOLUTION_STACK/$(PLATFORM)/g" terraform.tfvars ; \
 	fi 
@@ -80,6 +82,7 @@ else ifeq ($(OS),Linux)
 	sed -i -e "s/load_balancer_log_prefix[ \t]*=.*/load_balancer_log_prefix = \"$(TARGET)\"/" terraform.tfvars
 	sed -i -e "s/#load_balancer_alias[ \t]*=.*/#load_balancer_alias = \"$(TARGET)\-ingress\"/" terraform.tfvars
 	sed -i -e "s/app_version_$(BLUEGREEN_STATE)[ \t]*=.*/app_version_$(BLUEGREEN_STATE) = \"$(RELEASE_VERSION)\"/g" terraform.tfvars
+	sed -i -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 	@if [ "$(PLATFORM)" != "" ] ; then \
 		sed -i -e "s/SOLUTION_STACK/$(PLATFORM)/g" terraform.tfvars ; \
 	fi
@@ -88,6 +91,17 @@ else
 	exit -1
 endif
 	find values/ -type f -print0 | sort -z | xargs -0 sha1sum | sha1sum > .values_hash_$(BLUEGREEN_STATE)
+
+update-stack: checkbluegreen state module.tf
+SOL_STACK := "$(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '{print $$2}')"
+ifeq ($(OS),Darwin)
+	sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
+else ifeq ($(OS),Linux)
+	sed -i -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
+else
+	echo "platfrom $(OS) not supported to release from"
+	exit -1
+endif
 
 VERSION:
 ifeq ($(VERFOUND),1)

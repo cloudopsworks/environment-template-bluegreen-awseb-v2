@@ -40,7 +40,7 @@ module "app_version_b" {
   source_name      = var.source_name
   source_version   = var.app_version_b
   namespace        = var.namespace
-  solution_stack   = var.solution_stack
+  solution_stack   = var.solution_stack_b
   repository_owner = var.repository_owner
   # For the sake of the version consistency hash is maintained off the module
   config_source_folder = "values/${var.release_name}"
@@ -69,7 +69,7 @@ module "beanstalk_app_b" {
 
   release_name              = var.release_name
   namespace                 = format("%s-%s", var.namespace, "b")
-  solution_stack            = var.solution_stack
+  solution_stack            = var.solution_stack_b
   application_version_label = module.app_version_b[0].application_version_label
 
   private_subnets = var.private_subnets

@@ -23,6 +23,15 @@ variable "app_version_b" {
   description = "(required) version of the application in SEMVER format, for Deployment B"
 }
 
+variable "solution_stack_a" {
+  type        = string
+  description = "(required) Solution Stack to apply to the deployment A, allows individual stacks for each deployment."
+}
+
+variable "solution_stack_b" {
+  type        = string
+  description = "(required) Solution Stack to apply to the deployment B, allows individual stacks for each deployment."
+}
 variable "deployment_a_deactivated" {
   type        = bool
   description = "(required) Deployment A deactivation flag, if true all resources in A deployment will be destroyed."
