@@ -99,7 +99,7 @@ jobs:
       - name: Proceed to switch to new environment
         if: ${{ steps.check_go.outputs.result == 'true' }}
         run: |
-          make green-to-prod
+          make green/to/prod
 
       # Do Tidy on terraform Files
       - name: Terraform tidy up

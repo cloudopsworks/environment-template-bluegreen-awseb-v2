@@ -49,6 +49,8 @@ jobs:
           echo "CHART=${{ github.event.client_payload.promote.repository }}" >> VERSION
           echo "TARGET=${{ github.event.client_payload.promote.releasename }}" >> VERSION
           echo "PLATFORM=${{ github.event.client_payload.promote.platform }}" >> VERSION
+          echo "PACKAGE_NAME=${{ github.event.client_payload.promote.packagename }}" >> VERSION
+          echo "PACKAGE_TYPE=${{ github.event.client_payload.promote.packagetype }}" >> VERSION
 
       - name: Check which tier we are
         id: current-tier
@@ -56,7 +58,7 @@ jobs:
           tier="blue-green/new"
           
           if [ -f .bluegreen_state ] ; then
-            make promote
+            make env/promote
             green_server_version=$(head -n 1 .bluegreen_state | head -c 1)
             tier="blue-green/$green_server_version"
           fi
@@ -64,7 +66,7 @@ jobs:
 
       - name: Push change for release
         run: |
-          make version
+          make env/version
 
       # Do Tidy on terraform Files
       - name: Terraform tidy up

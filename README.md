@@ -37,12 +37,12 @@ This will create a new Branch with following naming:
 * config-< declarative branch name >
 *  Run Following command on the new branch
   ```shell
-  make config
+  make env/config
   ```
 * Do all configuration changes on **./values/**
 * Run update on each configuration change
   ```shell
-  make update
+  make env/update
   ```
 * Commit changes to the branch and push to repository
 * Create a new pull request in order to start the deployment in blue/green way.
@@ -61,7 +61,7 @@ setup this environment and maintain the S3 Bucket and deployment pipeline. <br/>
 
 First step is to run the following command:
 ```shell
-make init
+make env/init
 ```
 
 ### Create OWNERS file

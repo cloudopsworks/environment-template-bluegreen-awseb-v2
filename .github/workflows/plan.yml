@@ -91,7 +91,7 @@ jobs:
       # Install yq tool
       - name: Install yq
         run: |
-          sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.6.3/yq_linux_amd64
+          sudo wget -O /usr/local/bin/yq https://github.com/mikefarah/yq/releases/download/v4.33.3/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
 
       # Install terraform tools
@@ -153,7 +153,7 @@ jobs:
   
   # Deploy Job
   #   Perform deployment as per the step indicator by .beacon file.
-  #   Slash commands modifies the PR HEAD accordingly to make this flow run properly.
+  #   Slash commands modifies the PR HEAD accordingly to make env/this flow run properly.
   #   Runs unless a rollback was not requested.
   deploy:
     runs-on: ubuntu-latest

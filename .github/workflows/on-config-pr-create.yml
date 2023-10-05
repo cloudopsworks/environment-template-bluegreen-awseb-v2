@@ -39,7 +39,7 @@ jobs:
           terraform_version: 1.3.3
 
       - name: Treat the PR as a promotion
-        run: make promote
+        run: make env/promote
 
       # Do Tidy on terraform Files
       - name: Terraform tidy up
