@@ -55,8 +55,8 @@ module "app_version_a" {
   beanstalk_application = var.beanstalk_application
 
   github_package = var.gh_package_a
-  package_name = var.gh_package_name
-  package_type = var.gh_package_type
+  package_name   = var.gh_package_name
+  package_type   = var.gh_package_type
 
   depends_on = [
     module.versions_bucket
