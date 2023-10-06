@@ -143,8 +143,8 @@ Is an object defined by this structure:
 }
 EOF
 
-#  validation {
-#    condition = var.beanstalk_scale_rule != null && (var.beanstalk_scale_rule.trigger && var.beanstalk_scale_rule.statistic != null && var.beanstalk_scale_rule.unit != null)
-#    error_message = "beanstalk_scale_rule must be null or an object with the following structure: { trigger = string, statistic = string, unit = string, breach_duration = number, up_threshold = number, up_increment = number, down_threshold = number, down_increment = number }"
-#  }
+  #  validation {
+  #    condition = var.beanstalk_scale_rule != null && (var.beanstalk_scale_rule.trigger && var.beanstalk_scale_rule.statistic != null && var.beanstalk_scale_rule.unit != null)
+  #    error_message = "beanstalk_scale_rule must be null or an object with the following structure: { trigger = string, statistic = string, unit = string, breach_duration = number, up_threshold = number, up_increment = number, down_threshold = number, down_increment = number }"
+  #  }
 }

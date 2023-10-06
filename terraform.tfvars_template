@@ -178,7 +178,8 @@ deployment_traffic = "<a or b>"
 ##
 # Specific Values for github packages management
 # (DO NOT TOUCH!)
-gh_package = false
+gh_package_a    = false
+gh_package_b    = false
 gh_package_name = "<GITHUB-PACKAGE-NAME>"
 gh_package_type = "<GITHUB-PACKAGE-TYPE>"
 
