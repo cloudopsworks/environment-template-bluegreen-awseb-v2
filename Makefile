@@ -67,7 +67,7 @@ env/state:
 
 SOL_STACK := $(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '{print $$2}')
 
-env/version: VERSION checkbluegreen state module.tf
+env/version: VERSION env/checkbluegreen env/state module.tf
 ifeq ($(OS),darwin)
 	sed -i "" -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
 	sed -i "" -e "s/source_name[ \t]*=.*/source_name = \"$(CHART)\"/" terraform.tfvars
