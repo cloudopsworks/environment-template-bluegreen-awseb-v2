@@ -102,9 +102,9 @@ else ifeq ($(OS),linux)
 		sed -i -e "s/SOLUTION_STACK/$(PLATFORM)/g" terraform.tfvars ; \
 	fi
 	@if [[ "$(PACKAGE_NAME)" != "" && "$(PACKAGE_TYPE)" != "" ]] ; then \
-		sed -i -e "s/gh_package[ \t]*=.*/gh_package = true/g" terraform.tfvars ; \
+		sed -i -e "s/gh_package_$(BLUEGREEN_STATE)[ \t]*=.*/gh_package_$(BLUEGREEN_STATE) = true/g" terraform.tfvars ; \
 	else \
-		sed -i -e "s/gh_package[ \t]*=.*/gh_package = false/g" terraform.tfvars ; \
+		sed -i -e "s/gh_package_$(BLUEGREEN_STATE)[ \t]*=.*/gh_package_$(BLUEGREEN_STATE) = false/g" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_NAME)" != "" ] ; then \
 		sed -i -e "s/gh_package_name[ \t]*=.*/gh_package_name = \"$(PACKAGE_NAME)\"/g" terraform.tfvars ; \
