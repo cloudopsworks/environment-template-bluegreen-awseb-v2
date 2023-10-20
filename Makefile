@@ -75,10 +75,13 @@ ifeq ($(OS),darwin)
 	sed -i "" -e "s/load_balancer_log_prefix[ \t]*=.*/load_balancer_log_prefix = \"$(TARGET)\"/" terraform.tfvars
 	sed -i "" -e "s/#load_balancer_alias[ \t]*=.*/#load_balancer_alias = \"$(TARGET)\-ingress\"/" terraform.tfvars
 	sed -i "" -e "s/app_version_$(BLUEGREEN_STATE)[ \t]*=.*/app_version_$(BLUEGREEN_STATE) = \"$(RELEASE_VERSION)\"/g" terraform.tfvars
-	sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 	@if [ "$(PLATFORM)" != "" ] ; then \
-		sed -i "" -e "s/SOLUTION_STACK/$(PLATFORM)/g" terraform.tfvars ; \
-	fi 
+		sed -i "" -e "s/solution_stack[ \t]*=.*/solution_stack = \"$(PLATFORM)\"/g" terraform.tfvars ; \
+		sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(PLATFORM)\"/g" terraform.tfvars ; \
+	else \
+		sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars ; \
+	fi
+	sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 	@if [[ "$(PACKAGE_NAME)" != "" && "$(PACKAGE_TYPE)" != "" ]] ; then \
 		sed -i "" -e "s/gh_package_$(BLUEGREEN_STATE)[ \t]*=.*/gh_package_$(BLUEGREEN_STATE) = true/g" terraform.tfvars ; \
 	else \
@@ -97,9 +100,11 @@ else ifeq ($(OS),linux)
 	sed -i -e "s/load_balancer_log_prefix[ \t]*=.*/load_balancer_log_prefix = \"$(TARGET)\"/" terraform.tfvars
 	sed -i -e "s/#load_balancer_alias[ \t]*=.*/#load_balancer_alias = \"$(TARGET)\-ingress\"/" terraform.tfvars
 	sed -i -e "s/app_version_$(BLUEGREEN_STATE)[ \t]*=.*/app_version_$(BLUEGREEN_STATE) = \"$(RELEASE_VERSION)\"/g" terraform.tfvars
-	sed -i -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 	@if [ "$(PLATFORM)" != "" ] ; then \
-		sed -i -e "s/SOLUTION_STACK/$(PLATFORM)/g" terraform.tfvars ; \
+		sed -i -e "s/solution_stack[ \t]*=.*/solution_stack = \"$(PLATFORM)\"/g" terraform.tfvars ; \
+		sed -i -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(PLATFORM)\"/g" terraform.tfvars ; \
+	else \
+		sed -i -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars ; \
 	fi
 	@if [[ "$(PACKAGE_NAME)" != "" && "$(PACKAGE_TYPE)" != "" ]] ; then \
 		sed -i -e "s/gh_package_$(BLUEGREEN_STATE)[ \t]*=.*/gh_package_$(BLUEGREEN_STATE) = true/g" terraform.tfvars ; \
