@@ -35,7 +35,7 @@ resource "aws_lb" "apigw_rest_lb" {
 
 resource "aws_lb_target_group" "apigw_rest_lb_tg" {
   count       = var.api_gw_enabled ? 1 : 0
-  name        = "tg-gw-nlb-${lower(var.release_name)}-${var.namespace}-443"
+  name        = "tg-${lower(var.release_name)}-${var.namespace}-443"
   target_type = "alb"
   protocol    = "TCP"
   port        = 443
