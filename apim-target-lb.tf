@@ -9,7 +9,7 @@
 # If you want to use an existing NLB, use the `vpc_link.use_existing = true` option
 resource "aws_api_gateway_vpc_link" "apigw_rest_link" {
   count       = var.api_gw_enabled ? 1 : 0
-  name        = "api-gw-nlb-${lower(var.release_name)}-${var.namespace}-nlb-link"
+  name        = var.api_gw_vpc_link_name == "" ? "api-gw-nlb-${lower(var.release_name)}-${var.namespace}-nlb-link" : var.api_gw_vpc_link_name
   description = "VPC Link for API Gateway to NLB: api-gw-nlb-${lower(var.release_name)}-${var.namespace}"
   target_arns = [aws_lb.apigw_rest_lb[0].arn]
   tags        = local.tags

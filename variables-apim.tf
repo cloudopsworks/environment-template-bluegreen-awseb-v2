@@ -9,3 +9,9 @@ variable "api_gw_enabled" {
   description = "(optional) Enable APIM endpoint setup. Default is false."
   default     = false
 }
+
+variable "api_gw_vpc_link_name" {
+  type        = string
+  description = "(optional) Name of the VPC Link to be created. Default is empty."
+  default     = ""
+}
