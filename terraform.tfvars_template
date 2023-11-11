@@ -90,6 +90,18 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 #failover_domain_alias = "DOMAIN NAME ALIAS"
 #failover_type         = "primary" # or "secondary"
 
+api_gw_enabled: false
+#api_gw_vpc_link_existing: false
+#api_gw_vpc_link_name: VPC_LINK_NAME # Optional: only valid when existing link is used
+#api_gw_vpc_link_lb_name: LOAD_BALANCER_NAME
+#api_gw_vpc_link_listener_port: 8443
+#api_gw_vpc_link_to_port: 443
+#api_gw_vpc_link_health: # Enable this and below to change the type of healthcheck
+#api_gw_vpc_link_protocol: HTTPS
+#api_gw_vpc_link_http_status: "200-401"
+#api_gw_vpc_link_path: "/"
+
+##
 ##
 # Alarms Configurations - uncomment to activate
 # NOTE: The alarm will be created only if the cloudwatch_alarm_enabled is set to true
