@@ -92,7 +92,7 @@ app_domain_alias    = "DOMAIN NAME ALIAS"
 
 ##
 # API Gateway VPC Link support - uncomment and set to true to activate
-api_gw_enabled = true
+api_gw_enabled = false
 #api_gw_vpc_link_existing = false
 #api_gw_vpc_link_name = "VPC_LINK_NAME" # Optional: only valid when existing link is used
 #api_gw_vpc_link_lb_name = "LOAD_BALANCER_NAME"
