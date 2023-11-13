@@ -41,6 +41,10 @@ resource "aws_lb_target_group" "apigw_rest_lb_tg" {
   port        = 443
   vpc_id      = var.vpc_id
   tags        = local.tags
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "aws_lb_target_group_attachment" "apigw_rest_lb_tg_att" {
