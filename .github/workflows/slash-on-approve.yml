@@ -203,7 +203,7 @@ jobs:
       - name: Decommission blue
         if: ${{ steps.approval.outputs.result == 'approved' }}
         run: |
-          make decomm-blue
+          make env/decomm/blue
 
       - name: Push change to branch
         run: |

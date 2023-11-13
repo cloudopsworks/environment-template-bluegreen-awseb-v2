@@ -47,3 +47,7 @@ modules/**/temp/**
 # Ignore Eclipse IDE
 .classpath
 .settings
+
+# Tronador excludes
+.tronador
+tronador/

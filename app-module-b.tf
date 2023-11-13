@@ -32,7 +32,7 @@ module "app_version_b" {
   count = !var.deployment_b_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-version/aws"
-  version         = "1.0.5"
+  version         = "1.0.6"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -53,6 +53,10 @@ module "app_version_b" {
   application_versions_bucket = local.application_versions_bucket
 
   beanstalk_application = var.beanstalk_application
+
+  github_package = var.gh_package_b
+  package_name   = var.gh_package_name
+  package_type   = var.gh_package_type
 
   depends_on = [
     module.versions_bucket
