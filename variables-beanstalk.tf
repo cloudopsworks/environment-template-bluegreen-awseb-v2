@@ -76,7 +76,7 @@ variable "beanstalk_max_instances" {
 }
 
 variable "beanstalk_port_mappings" {
-  type        = list(any)
+  type        = any
   default     = []
   description = <<EOF
 Optional variable for mapping ports to backend ports:
@@ -96,6 +96,11 @@ port_mappings = [
   }
 ]
 EOF
+}
+
+variable "beanstalk_rule_mappings" {
+  type    = list(any)
+  default = []
 }
 
 variable "extra_settings" {
