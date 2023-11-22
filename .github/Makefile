@@ -17,5 +17,4 @@ VER_PATCH := $(shell echo $(VER_NUM) | cut -f3 -d.)
 tag:
 	git tag -f $(VER_NUM)
 	git tag -f $(VER_MAJOR).$(VER_MINOR)
-	git tag -f $(VER_MAJOR)
 
