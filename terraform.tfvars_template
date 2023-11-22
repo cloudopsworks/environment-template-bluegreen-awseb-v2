@@ -68,6 +68,8 @@ load_balancer_public             = false
 load_balancer_ssl_certificate_id = "EXISTING CERTIFICATE"
 #load_balancer_ssl_policy         = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 #load_balancer_alias              = "OVERRIDE LB ALIAS"
+#load_balancer_shared             = false
+#load_balancer_shared_name        = "<SHARED LB NAME>"
 
 ##
 # Networking related configuration
@@ -135,6 +137,18 @@ api_gw_enabled = false
 #    to_port          = 8443
 #    protocol         = "HTTPS"
 #    backend_protocol = "HTTPS"
+#    rules = ["rule1"]
+#  }
+#]
+
+##
+# Optional Variable for mapping rules for shared Load Balancer
+#beanstalk_rule_mappings = [
+#  {
+#    name     = "rule1"
+#    priority = 1
+#    process  = "port443"
+#    host     = "my.example.com"
 #  }
 #]
 

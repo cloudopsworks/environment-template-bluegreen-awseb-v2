@@ -27,3 +27,15 @@ variable "load_balancer_alias" {
   default     = ""
   description = "(optional) Required load balancer alias,"
 }
+
+variable "load_balancer_shared" {
+  type        = bool
+  default     = false
+  description = "(optional) Setting to make Application Load Balancer, defaults to public Load Balancer, Default: false"
+}
+
+variable "load_balancer_shared_name" {
+  type        = string
+  default     = ""
+  description = "(optional) Shared Load Balancer ARN id to use, Default: (empty)"
+}

@@ -67,7 +67,7 @@ module "beanstalk_app_a" {
   count = !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.8"
+  version         = "1.0.9"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -97,6 +97,8 @@ module "beanstalk_app_a" {
   beanstalk_lb_sg                = var.beanstalk_lb_sg
   beanstalk_target_sg            = var.beanstalk_target_sg
 
+  load_balancer_shared             = var.load_balancer_shared
+  load_balancer_shared_name        = var.load_balancer_shared_name
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
   load_balancer_log_prefix         = "${var.release_name}-a"
@@ -105,6 +107,7 @@ module "beanstalk_app_a" {
   load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "a") : format("%s-%s", var.load_balancer_alias, "a")
 
   port_mappings  = var.beanstalk_port_mappings
+  rule_mappings  = var.beanstalk_rule_mappings
   extra_settings = var.extra_settings
   extra_tags     = var.extra_tags
 }
