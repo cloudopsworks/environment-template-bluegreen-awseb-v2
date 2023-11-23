@@ -21,7 +21,7 @@ resource "aws_route53_record" "failover_record" {
   set_identifier = format("%s-%s-%s", var.release_name, var.namespace, var.region)
 
   alias {
-    name                   = try(module.app_dns_a[0].fqdn, module.app_dns_b[0].fqdn, "")
+    name                   = try(module.app_dns_a[0].fqdn, module.app_dns_b[0].fqdn, try(module.app_dns_shared[0].fqdn, ""))
     zone_id                = data.aws_route53_zone.failover_app_domain.id
     evaluate_target_health = true
   }
