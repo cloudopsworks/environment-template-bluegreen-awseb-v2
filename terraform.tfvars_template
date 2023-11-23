@@ -146,7 +146,6 @@ api_gw_enabled = false
 #beanstalk_rule_mappings = [
 #  {
 #    name     = "rule1"
-#    priority = 1
 #    process  = "port443"
 #    host     = "my.example.com"
 #  }
