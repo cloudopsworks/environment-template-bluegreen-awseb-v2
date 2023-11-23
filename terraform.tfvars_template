@@ -137,7 +137,6 @@ api_gw_enabled = false
 #    to_port          = 8443
 #    protocol         = "HTTPS"
 #    backend_protocol = "HTTPS"
-#    rules = ["rule1"]
 #  }
 #]
 
