@@ -13,6 +13,7 @@ variable "load_balancer_public" {
 variable "load_balancer_ssl_certificate_id" {
   type        = string
   description = "(required) SSL certificate ID in the same Region to attach to LB."
+  default     = ""
   #  sensitive   = true
 }
 
