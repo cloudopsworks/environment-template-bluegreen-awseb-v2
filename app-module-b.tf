@@ -9,7 +9,7 @@
 #   - This can be commented out to disable DNS management (not recommended)
 #
 module "app_dns_b" {
-  count = !var.app_domain_disabled && !var.deployment_b_deactivated ? 1 : 0
+  count = !var.app_domain_disabled && !var.deployment_b_deactivated && !var.load_balancer_shared ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
   version         = "1.0.4"
@@ -99,6 +99,7 @@ module "beanstalk_app_b" {
 
   load_balancer_shared             = var.load_balancer_shared
   load_balancer_shared_name        = var.load_balancer_shared_name
+  load_balancer_shared_weight      = var.deployment_traffic == "b" ? 10 : 0
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
   load_balancer_log_prefix         = "${var.release_name}-b"
