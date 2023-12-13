@@ -137,6 +137,8 @@ api_gw_enabled = false
 #    to_port          = 8443
 #    protocol         = "HTTPS"
 #    backend_protocol = "HTTPS"
+#    path     = "/path"
+#    rules    = ["rule1"]  # Optional: only for shared LB
 #  }
 #]
 
