@@ -40,3 +40,9 @@ variable "load_balancer_shared_name" {
   default     = ""
   description = "(optional) Shared Load Balancer ARN id to use, Default: (empty)"
 }
+
+variable "load_balancer_shared_prefixes" {
+  type        = string
+  default     = ""
+  description = "(optional) Prefixes to apply to load balancer resouces, Default: (empty)"
+}

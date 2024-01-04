@@ -108,7 +108,7 @@ module "beanstalk_app_b" {
   load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "b") : format("%s-%s", var.load_balancer_alias, "b")
 
   port_mappings  = var.beanstalk_port_mappings
-  rule_mappings  = var.beanstalk_rule_mappings
+  rule_mappings  = [] #var.beanstalk_rule_mappings
   extra_settings = var.extra_settings
   extra_tags     = var.extra_tags
 }
