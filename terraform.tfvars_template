@@ -144,10 +144,14 @@ api_gw_enabled = false
 
 ##
 # Optional Variable for mapping rules for shared Load Balancer
+# Priority must be unique within the different environments using the shared LB
+# also must be un 100 increments in preference because of the way the rules are
+# set on blue/green stage
 #beanstalk_rule_mappings = [
 #  {
 #    name     = "rule1"
 #    process  = "port443"
+#    priority = 100
 #    host     = "my.example.com"
 #  }
 #]
