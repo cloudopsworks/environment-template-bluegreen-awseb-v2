@@ -60,4 +60,10 @@ resource "aws_lb_listener_rule" "shared_lb_listener_rule_a" {
       values = tolist(concat(split(",", each.value.host), [module.beanstalk_app_a[0].environment_cname]))
     }
   }
+
+  tags = {
+    Name               = "${var.load_balancer_shared_prefixes}-${each.key}-listener-rule"
+    Environment        = "${var.release_name}-${var.namespace}-shared"
+    Deployment_Traffic = var.deployment_traffic
+  }
 }
