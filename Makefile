@@ -83,15 +83,15 @@ ifeq ($(OS),darwin)
 	fi
 	sed -i "" -e "s/solution_stack_$(BLUEGREEN_STATE)[ \t]*=.*/solution_stack_$(BLUEGREEN_STATE) = \"$(SOL_STACK)\"/g" terraform.tfvars
 	@if [[ "$(PACKAGE_NAME)" != "" && "$(PACKAGE_TYPE)" != "" ]] ; then \
-		sed -i "" -e "s/gh_package_$(BLUEGREEN_STATE)[ \t]*=.*/gh_package_$(BLUEGREEN_STATE) = true/g" terraform.tfvars ; \
+		sed -i "" -e "s|gh_package_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_$(BLUEGREEN_STATE) = true|g" terraform.tfvars ; \
 	else \
-		sed -i "" -e "s/gh_package_$(BLUEGREEN_STATE)[ \t]*=.*/gh_package_$(BLUEGREEN_STATE) = false/g" terraform.tfvars ; \
+		sed -i "" -e "s|gh_package_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_$(BLUEGREEN_STATE) = false|g" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_NAME)" != "" ] ; then \
-		sed -i "" -e "s/gh_package_name[ \t]*=.*/gh_package_name = \"$(PACKAGE_NAME)\"/" terraform.tfvars ; \
+		sed -i "" -e "s|gh_package_name[ \t]*=.*|gh_package_name = \"$(PACKAGE_NAME)\"|" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_TYPE)" != "" ] ; then \
-		sed -i "" -e "s/gh_package_type[ \t]*=.*/gh_package_type = \"$(PACKAGE_TYPE)\"/" terraform.tfvars ; \
+		sed -i "" -e "s|gh_package_type[ \t]*=.*|gh_package_type = \"$(PACKAGE_TYPE)\"|" terraform.tfvars ; \
 	fi
 else ifeq ($(OS),linux)
 	sed -i -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
