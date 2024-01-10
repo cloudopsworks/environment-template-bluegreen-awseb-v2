@@ -4,12 +4,27 @@
 #            Distributed Under Apache v2.0 License
 #
 
-variable "release_name" {
+variable "environment_name" {
+  type        = string
+  description = "(required) This configures the application environment-name"
+}
+
+variable "release_name_a" {
   type        = string
   description = "(required) This configures the application release-name"
 }
 
-variable "source_name" {
+variable "release_name_b" {
+  type        = string
+  description = "(required) This configures the application release-name"
+}
+
+variable "source_name_a" {
+  type        = string
+  description = "(required) this is the Helm CHART name sourced from organization repository."
+}
+
+variable "source_name_b" {
   type        = string
   description = "(required) this is the Helm CHART name sourced from organization repository."
 }

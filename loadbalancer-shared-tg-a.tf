@@ -32,7 +32,7 @@ resource "aws_lb_target_group" "shared_lb_tg_a" {
 
   tags = {
     Name        = "${var.load_balancer_shared_prefixes}-${each.key}-tg"
-    Environment = "${var.release_name}-${var.namespace}-shared"
+    Environment = "${var.release_name_a}-${var.namespace}-shared"
   }
   lifecycle {
     create_before_destroy = true
@@ -63,7 +63,7 @@ resource "aws_lb_listener_rule" "shared_lb_listener_rule_a" {
 
   tags = {
     Name               = "${var.load_balancer_shared_prefixes}-${each.key}-listener-rule"
-    Environment        = "${var.release_name}-${var.namespace}-shared"
+    Environment        = "${var.release_name_a}-${var.namespace}-shared"
     Deployment_Traffic = var.deployment_traffic
   }
 }

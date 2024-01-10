@@ -18,7 +18,7 @@ module "app_dns_shared" {
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name             = var.release_name
+  release_name             = var.environment_name
   namespace                = var.namespace
   domain_name              = var.app_domain_name
   domain_name_alias_prefix = var.app_domain_alias
