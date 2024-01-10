@@ -9,10 +9,10 @@
 # If you want to use an existing NLB, use the `vpc_link.use_existing = true` option
 resource "aws_api_gateway_vpc_link" "apigw_rest_link" {
   count       = var.api_gw_enabled ? 1 : 0
-  name        = var.api_gw_vpc_link_name == "" ? "api-gw-nlb-${lower(var.release_name)}-${var.namespace}-nlb-link" : var.api_gw_vpc_link_name
-  description = "VPC Link for API Gateway to NLB: api-gw-nlb-${lower(var.release_name)}-${var.namespace}"
+  name        = var.api_gw_vpc_link_name == "" ? "api-gw-nlb-${lower(var.environment_name)}-${var.namespace}-nlb-link" : var.api_gw_vpc_link_name
+  description = "VPC Link for API Gateway to NLB: api-gw-nlb-${lower(var.environment_name)}-${var.namespace}"
   target_arns = [aws_lb.apigw_rest_lb[0].arn]
-  tags        = local.tags
+  tags        = local.tags_global
 }
 
 #resource "aws_apigatewayv2_vpc_link" "apigw_http_link" {
@@ -26,21 +26,21 @@ resource "aws_api_gateway_vpc_link" "apigw_rest_link" {
 
 resource "aws_lb" "apigw_rest_lb" {
   count              = var.api_gw_enabled ? 1 : 0
-  name               = "api-gw-nlb-${lower(var.release_name)}-${var.namespace}"
+  name               = "api-gw-nlb-${lower(var.environment_name)}-${var.namespace}"
   internal           = !var.load_balancer_public
   load_balancer_type = "network"
   subnets            = var.load_balancer_public ? var.public_subnets : var.private_subnets
-  tags               = local.tags
+  tags               = local.tags_global
 }
 
 resource "aws_lb_target_group" "apigw_rest_lb_tg" {
   count       = var.api_gw_enabled ? 1 : 0
-  name        = "tg-${lower(var.release_name)}-${var.namespace}-443"
+  name        = "tg-${lower(var.environment_name)}-${var.namespace}-443"
   target_type = "alb"
   protocol    = "TCP"
   port        = 443
   vpc_id      = var.vpc_id
-  tags        = local.tags
+  tags        = local.tags_global
 
   lifecycle {
     create_before_destroy = true
@@ -63,7 +63,7 @@ resource "aws_lb_listener" "apigw_rest_lb_listener" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.apigw_rest_lb_tg[0].arn
   }
-  tags = local.tags
+  tags = local.tags_global
 }
 
 ## EXISTING NLB

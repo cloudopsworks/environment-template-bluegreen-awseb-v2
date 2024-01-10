@@ -6,6 +6,7 @@
 region                   = "AWS REGION"
 sts_assume_role          = "arn:aws:iam::ACCOUNT_ID:role/GITHubActionsRunRole"
 default_bucket_prefix    = "AWS S3 BUCKET PREFIX NAME THAT WILL BE USED FOR BUCKETS IN THIS ENV (LOGS+VERSION)"
+environment_name         = "ENVIRONMENT NAME"
 namespace                = "IDENTIFIES THE NAMESPACE FOR THE ENVIRONMENT TEAM" 
 repository_owner         = "GITHUB TEAM OWNER"
 logs_retention_years     = 3
@@ -199,21 +200,25 @@ api_gw_enabled = false
 ##
 # Specific values regarding the environment, managed by scripts
 # (DO NOT TOUCH!)
-release_name       = "<RELEASE-NAME>"
-source_name        = "<CHART-NAME-ON-REPO"
+release_name_a     = "<RELEASE-NAME>"
+source_name_a      = "<CHART-NAME-ON-REPO"
 app_version_a      = "<VERSION_1>"
-app_version_b      = "<VERSION_1>"
 solution_stack_a   = "<SOLUTION_STACK>"
+release_name_b     = "<RELEASE-NAME>"
+source_name_b      = "<CHART-NAME-ON-REPO"
+app_version_b      = "<VERSION_1>"
 solution_stack_b   = "<SOLUTION_STACK>"
 deployment_traffic = "<a or b>"
 
 ##
 # Specific Values for github packages management
 # (DO NOT TOUCH!)
-gh_package_a    = false
-gh_package_b    = false
-gh_package_name = "<GITHUB-PACKAGE-NAME>"
-gh_package_type = "<GITHUB-PACKAGE-TYPE>"
+gh_package_a      = false
+gh_package_name_a = "<GITHUB-PACKAGE-NAME>"
+gh_package_type_a = "<GITHUB-PACKAGE-TYPE>"
+gh_package_b      = false
+gh_package_name_b = "<GITHUB-PACKAGE-NAME>"
+gh_package_type_b = "<GITHUB-PACKAGE-TYPE>"
 
 ##
 # Deployment destruction control, managed by scripts.

@@ -18,7 +18,7 @@ resource "aws_route53_record" "failover_record" {
   failover_routing_policy {
     type = upper(var.failover_type)
   }
-  set_identifier = format("%s-%s-%s", var.release_name, var.namespace, var.region)
+  set_identifier = format("%s-%s-%s", var.environment_name, var.namespace, var.region)
 
   alias {
     name                   = try(module.app_dns_a[0].fqdn, module.app_dns_b[0].fqdn, try(module.app_dns_shared[0].fqdn, ""))

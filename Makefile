@@ -70,8 +70,8 @@ SOL_STACK := $(shell grep -E "^solution_stack\s*=" terraform.tfvars | awk -F\" '
 env/version: VERSION env/checkbluegreen env/state module.tf
 ifeq ($(OS),darwin)
 	sed -i "" -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
-	sed -i "" -e "s/source_name[ \t]*=.*/source_name = \"$(CHART)\"/" terraform.tfvars
-	sed -i "" -e "s/release_name[ \t]*=.*/release_name = \"$(TARGET)\"/" terraform.tfvars
+	sed -i "" -e "s/source_name_$(BLUEGREEN_STATE)[ \t]*=.*/source_name_$(BLUEGREEN_STATE) = \"$(CHART)\"/" terraform.tfvars
+	sed -i "" -e "s/release_name_$(BLUEGREEN_STATE)[ \t]*=.*/release_name_$(BLUEGREEN_STATE) = \"$(TARGET)\"/" terraform.tfvars
 	sed -i "" -e "s/load_balancer_log_prefix[ \t]*=.*/load_balancer_log_prefix = \"$(TARGET)\"/" terraform.tfvars
 	sed -i "" -e "s/#load_balancer_alias[ \t]*=.*/#load_balancer_alias = \"$(TARGET)\-ingress\"/" terraform.tfvars
 	sed -i "" -e "s/app_version_$(BLUEGREEN_STATE)[ \t]*=.*/app_version_$(BLUEGREEN_STATE) = \"$(RELEASE_VERSION)\"/g" terraform.tfvars
@@ -88,15 +88,15 @@ ifeq ($(OS),darwin)
 		sed -i "" -e "s|gh_package_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_$(BLUEGREEN_STATE) = false|g" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_NAME)" != "" ] ; then \
-		sed -i "" -e "s|gh_package_name[ \t]*=.*|gh_package_name = \"$(PACKAGE_NAME)\"|" terraform.tfvars ; \
+		sed -i "" -e "s|gh_package_name_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_name_$(BLUEGREEN_STATE) = \"$(PACKAGE_NAME)\"|" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_TYPE)" != "" ] ; then \
-		sed -i "" -e "s|gh_package_type[ \t]*=.*|gh_package_type = \"$(PACKAGE_TYPE)\"|" terraform.tfvars ; \
+		sed -i "" -e "s|gh_package_type_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_type_$(BLUEGREEN_STATE) = \"$(PACKAGE_TYPE)\"|" terraform.tfvars ; \
 	fi
 else ifeq ($(OS),linux)
 	sed -i -e "s/MODULE_NAME/$(TARGET)/g" terraform.tfvars
-	sed -i -e "s/source_name[ \t]*=.*/source_name = \"$(CHART)\"/" terraform.tfvars
-	sed -i -e "s/release_name[ \t]*=.*/release_name = \"$(TARGET)\"/" terraform.tfvars
+	sed -i -e "s/source_name_$(BLUEGREEN_STATE)[ \t]*=.*/source_name_$(BLUEGREEN_STATE) = \"$(CHART)\"/" terraform.tfvars
+	sed -i -e "s/release_name_$(BLUEGREEN_STATE)[ \t]*=.*/release_name_$(BLUEGREEN_STATE) = \"$(TARGET)\"/" terraform.tfvars
 	sed -i -e "s/load_balancer_log_prefix[ \t]*=.*/load_balancer_log_prefix = \"$(TARGET)\"/" terraform.tfvars
 	sed -i -e "s/#load_balancer_alias[ \t]*=.*/#load_balancer_alias = \"$(TARGET)\-ingress\"/" terraform.tfvars
 	sed -i -e "s/app_version_$(BLUEGREEN_STATE)[ \t]*=.*/app_version_$(BLUEGREEN_STATE) = \"$(RELEASE_VERSION)\"/g" terraform.tfvars
@@ -112,10 +112,10 @@ else ifeq ($(OS),linux)
 		sed -i -e "s|gh_package_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_$(BLUEGREEN_STATE) = false|g" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_NAME)" != "" ] ; then \
-		sed -i -e "s|gh_package_name[ \t]*=.*|gh_package_name = \"$(PACKAGE_NAME)\"|g" terraform.tfvars ; \
+		sed -i -e "s|gh_package_name_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_name_$(BLUEGREEN_STATE) = \"$(PACKAGE_NAME)\"|g" terraform.tfvars ; \
 	fi
 	@if [ "$(PACKAGE_TYPE)" != "" ] ; then \
-		sed -i -e "s|gh_package_type[ \t]*=.*|gh_package_type = \"$(PACKAGE_TYPE)\"|g" terraform.tfvars ; \
+		sed -i -e "s|gh_package_type_$(BLUEGREEN_STATE)[ \t]*=.*|gh_package_type_$(BLUEGREEN_STATE) = \"$(PACKAGE_TYPE)\"|g" terraform.tfvars ; \
 	fi
 else
 	echo "platfrom $(OS) not supported to release from"

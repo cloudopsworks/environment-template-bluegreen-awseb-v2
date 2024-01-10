@@ -15,13 +15,25 @@ variable "gh_package_b" {
   default     = false
 }
 
-variable "gh_package_name" {
+variable "gh_package_name_a" {
   type        = string
   description = "(optional) The name of the package to download from GitHub Packages."
   default     = ""
 }
 
-variable "gh_package_type" {
+variable "gh_package_name_b" {
+  type        = string
+  description = "(optional) The name of the package to download from GitHub Packages."
+  default     = ""
+}
+
+variable "gh_package_type_a" {
+  type        = string
+  description = "(optional) The type of the package to download from GitHub Packages."
+  default     = ""
+}
+
+variable "gh_package_type_b" {
   type        = string
   description = "(optional) The type of the package to download from GitHub Packages."
   default     = ""

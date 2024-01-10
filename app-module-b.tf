@@ -16,7 +16,7 @@ module "app_dns_b" {
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name             = var.release_name
+  release_name             = var.release_name_b
   namespace                = format("%s-%s", var.namespace, "b")
   domain_name              = var.app_domain_name
   domain_name_alias_prefix = var.app_domain_alias
@@ -36,14 +36,14 @@ module "app_version_b" {
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name     = var.release_name
-  source_name      = var.source_name
+  release_name     = var.release_name_b
+  source_name      = var.source_name_b
   source_version   = var.app_version_b
   namespace        = var.namespace
   solution_stack   = var.solution_stack_b
   repository_owner = var.repository_owner
   # For the sake of the version consistency hash is maintained off the module
-  config_source_folder = "values/${var.release_name}"
+  config_source_folder = "values/${var.release_name_b}"
   config_hash_file     = "${path.root}/.values_hash_b"
   bluegreen_identifier = "b"
   #   Supported source_compressed_type: zip, tar, tar.gz, tgz, tar.bz, tar.bz2, etc.
@@ -55,8 +55,8 @@ module "app_version_b" {
   beanstalk_application = var.beanstalk_application
 
   github_package = var.gh_package_b
-  package_name   = var.gh_package_name
-  package_type   = var.gh_package_type
+  package_name   = var.gh_package_name_b
+  package_type   = var.gh_package_type_b
 
   depends_on = [
     module.versions_bucket
@@ -71,7 +71,7 @@ module "beanstalk_app_b" {
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
-  release_name              = var.release_name
+  release_name              = var.release_name_b
   namespace                 = format("%s-%s", var.namespace, "b")
   solution_stack            = var.solution_stack_b
   application_version_label = module.app_version_b[0].application_version_label
@@ -102,10 +102,10 @@ module "beanstalk_app_b" {
   load_balancer_shared_weight      = var.deployment_traffic == "b" ? 10 : 0
   load_balancer_public             = var.load_balancer_public
   load_balancer_log_bucket         = local.load_balancer_log_bucket
-  load_balancer_log_prefix         = "${var.release_name}-b"
+  load_balancer_log_prefix         = "${var.release_name_b}-b"
   load_balancer_ssl_certificate_id = var.load_balancer_ssl_certificate_id
   load_balancer_ssl_policy         = var.load_balancer_ssl_policy
-  load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name, var.namespace, "b") : format("%s-%s", var.load_balancer_alias, "b")
+  load_balancer_alias              = var.load_balancer_alias == "" ? format("%s-%s-%s", var.release_name_b, var.namespace, "b") : format("%s-%s", var.load_balancer_alias, "b")
 
   port_mappings  = var.beanstalk_port_mappings
   rule_mappings  = [] #var.beanstalk_rule_mappings
