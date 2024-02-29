@@ -140,6 +140,7 @@ api_gw_enabled = false
 #    backend_protocol = "HTTPS"
 #    path     = "/path"
 #    rules    = ["rule1"]  # Optional: only for shared LB
+#    health_http_status = "200-401" # Optional: if need httpstatus diff from 200
 #  }
 #]
 
