@@ -108,7 +108,8 @@ jobs:
           fi
           echo "autoapprove=$is_auto" >> $GITHUB_OUTPUT
 
-      - uses: actions/github-script@v6
+      - name: Add labels for Automatic environment
+        uses: actions/github-script@v6
         if: ${{ steps.check_automatic.outputs.autoapprove == 'true' }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -129,8 +130,9 @@ jobs:
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "as_json=$reviewers_as_json" >> $GITHUB_OUTPUT
 
-      - uses: actions/github-script@v6
-        if: ${{ steps.check_automatic.outputs.autoapprove != 'true' }}
+      - name: Labeling of PR
+        uses: actions/github-script@v6
+        if: ${{ steps.check_automatic.outputs.autoapprove != 'true' && (needs.bluegreen.outputs.action != 'approved' || needs.bluegreen.outputs.action != 'rollback') }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
