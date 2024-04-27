@@ -71,6 +71,7 @@ load_balancer_ssl_certificate_id = "EXISTING CERTIFICATE"
 #load_balancer_alias              = "OVERRIDE LB ALIAS"
 #load_balancer_shared             = false
 #load_balancer_shared_name        = "<SHARED LB NAME>"
+#load_balancer_shared_prefixes     = "<shared lb prefix>"
 
 ##
 # Networking related configuration
