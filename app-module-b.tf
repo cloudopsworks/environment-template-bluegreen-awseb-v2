@@ -67,7 +67,7 @@ module "beanstalk_app_b" {
   count = !var.deployment_b_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.9"
+  version         = "1.0.10"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
