@@ -40,7 +40,13 @@ resource "aws_lb_target_group" "apigw_rest_lb_tg" {
   protocol    = "TCP"
   port        = 443
   vpc_id      = var.vpc_id
-  tags        = local.tags_global
+  health_check {
+    enabled  = var.api_gw_vpc_link_health
+    protocol = var.api_gw_vpc_link_protocol
+    matcher  = var.api_gw_vpc_link_http_status
+    path     = var.api_gw_vpc_link_path
+  }
+  tags = local.tags_global
 
   lifecycle {
     create_before_destroy = true
