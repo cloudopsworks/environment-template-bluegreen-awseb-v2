@@ -15,7 +15,7 @@ resource "aws_lb_target_group" "shared_lb_tg_b" {
   for_each = local.sh_rule_mappings_b
   name     = "${var.load_balancer_shared_prefixes}-${each.key}-tg"
   port     = local.sh_port_mappings_b[each.value.process].to_port
-  protocol = local.sh_port_mappings_b[each.value.process].protocol
+  protocol = local.sh_port_mappings_b[each.value.process].backend_protocol
   vpc_id   = var.vpc_id
 
   health_check {
