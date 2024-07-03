@@ -30,7 +30,7 @@ jobs:
     steps:
       # Get pull request head
       - name: Get Pull Request HEAD Ref
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: the_pull
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -45,18 +45,18 @@ jobs:
             return thePull.head.ref;
 
       # Proceed with checkout of source with all the references (depth=0)
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ steps.the_pull.outputs.result }}
           token: ${{ secrets.BOT_TOKEN }}
 
       # Installs Terraform
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.3.3
 
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         id: approval
         with:
           result-encoding: string
@@ -214,7 +214,7 @@ jobs:
           git push origin
 
       - name: Label entry at proper step
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |

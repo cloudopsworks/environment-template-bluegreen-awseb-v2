@@ -17,7 +17,7 @@ jobs:
       action: ${{ steps.pr_status.outputs.result }}
     steps:
       # Source Checkout from PR Head
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -32,7 +32,7 @@ jobs:
 
       - name: Get PR status from labels
         id: pr_status
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           result-encoding: string
@@ -84,7 +84,7 @@ jobs:
           echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
       # Source Checkout from PR Head
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -95,7 +95,7 @@ jobs:
           sudo chmod +x /usr/local/bin/yq
 
       # Install terraform tools
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.3.3
 
@@ -133,7 +133,7 @@ jobs:
 
       # Report as PR comment the output of validations
       - name: Report Validations Output
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -163,12 +163,12 @@ jobs:
     if: ${{ needs.bluegreen.outputs.action != 'rollback' && needs.bluegreen.outputs.action != 'approved' }}
     steps:
       # Check out of the PR HEAD (default)
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
       # Install Terraform
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.3.3
 
@@ -199,7 +199,7 @@ jobs:
 
       # Report the plan output to PR as new Comment
       - name: Report Plan Output
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -246,7 +246,7 @@ jobs:
 
       # Report the apply output to the PR as new comment
       - name: Report terraform apply output
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -290,7 +290,7 @@ jobs:
       # Fail the workflow if the plan or apply was not success
       - name: Fail the workflow
         if: ${{ steps.plan.outcome != 'success' || steps.apply.outcome != 'success' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -298,7 +298,7 @@ jobs:
 
       # Label step as deployed
       - name: Label PR step as deployed
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         if: steps.plan.outcome == 'success'
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
@@ -326,7 +326,7 @@ jobs:
       # Take output from Terraform and display on PR
       - name: Display outputs
         if: ${{ steps.plan.outcome == 'success' && steps.tf_result.outcome == 'success' }}
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -357,7 +357,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.plan.outputs.auto_approve == 'true' }}
     steps:
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
@@ -375,7 +375,7 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ needs.plan.outputs.auto_approve != 'true' && needs.bluegreen.outputs.action != 'approved' }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -388,7 +388,7 @@ jobs:
           echo "as_json=$reviewers_as_json" >> $GITHUB_OUTPUT
 
       - name: Add review and approval labels
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           script: |
@@ -436,7 +436,7 @@ jobs:
     steps:
       - name: Set DO-NOT-MERGE if not in last step
         id: check
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           result-encoding: string
@@ -476,13 +476,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # Install terraform
-      - uses: hashicorp/setup-terraform@v2
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.3.3
 
       # Get pull request base
       - name: Get Pull Request BASE Ref
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         id: the_pull
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -496,7 +496,7 @@ jobs:
             return thePull.base.ref;
 
       # Proceed with checkout of source with all the references (depth=0)  
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
           ref: ${{ steps.the_pull.outputs.result }}
@@ -538,7 +538,7 @@ jobs:
           GITHUB_API_TOKEN: ${{ secrets.BOT_TOKEN }}
 
       - name: Report terraform apply output
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |
@@ -587,7 +587,7 @@ jobs:
     if: ${{ needs.bluegreen.outputs.action == 'rollback' }}
     steps:
       - name: Closes the Pull Request
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.BOT_TOKEN }}
           script: |

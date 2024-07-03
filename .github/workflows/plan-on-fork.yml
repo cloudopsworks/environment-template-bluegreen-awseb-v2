@@ -32,7 +32,7 @@ jobs:
       action: ${{ steps.pr_status.outputs.result }}
     steps:
       # Source Checkout from PR Head
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -47,7 +47,7 @@ jobs:
 
       - name: Get PR status from labels
         id: pr_status
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{secrets.BOT_TOKEN}}
           result-encoding: string
@@ -90,7 +90,7 @@ jobs:
           echo "owner=$repo_owner" >> $GITHUB_OUTPUT
           echo "repo_name=$repo_name" >> $GITHUB_OUTPUT
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.BOT_TOKEN }}
 
@@ -109,7 +109,7 @@ jobs:
           echo "autoapprove=$is_auto" >> $GITHUB_OUTPUT
 
       - name: Add labels for Automatic environment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         if: ${{ steps.check_automatic.outputs.autoapprove == 'true' }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}
@@ -131,7 +131,7 @@ jobs:
           echo "as_json=$reviewers_as_json" >> $GITHUB_OUTPUT
 
       - name: Labeling of PR
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         if: ${{ steps.check_automatic.outputs.autoapprove != 'true' && (needs.bluegreen.outputs.action != 'approved' || needs.bluegreen.outputs.action != 'rollback') }}
         with:
           github-token: ${{secrets.BOT_TOKEN}}
