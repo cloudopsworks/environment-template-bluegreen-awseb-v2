@@ -5,7 +5,8 @@
 #
 
 data "aws_route53_zone" "failover_app_domain" {
-  name = var.app_domain_name
+  name         = var.app_domain_name
+  private_zone = var.app_domain_private
 }
 
 resource "aws_route53_record" "failover_record" {

@@ -1,16 +1,25 @@
 ##
-# (c) 2022 - Cloud Ops Works LLC - https://cloudops.works/
+# (c) 2021-2024 - Cloud Ops Works LLC - https://cloudops.works/
 #            On GitHub: https://github.com/cloudopsworks
 #            Distributed Under Apache v2.0 License
 #
 locals {
-  load_balancer_log_bucket    = "${var.default_bucket_prefix}-lb-logs"
-  application_versions_bucket = "${var.default_bucket_prefix}-app-versions"
+  load_balancer_log_bucket    = var.random_bucket_suffix ? "${var.default_bucket_prefix}-lb-logs-${random_string.random[0].result}" : "${var.default_bucket_prefix}-lb-logs"
+  application_versions_bucket = var.random_bucket_suffix ? "${var.default_bucket_prefix}-app-versions-${random_string.random[0].result}" : "${var.default_bucket_prefix}-app-versions"
+}
+
+resource "random_string" "random" {
+  count   = var.random_bucket_suffix ? 1 : 0
+  length  = 8
+  special = false
+  lower   = true
+  upper   = false
+  numeric = true
 }
 
 module "versions_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.15.1"
+  version = "3.15.2"
 
   bucket                                = local.application_versions_bucket
   acl                                   = "private"
@@ -67,11 +76,12 @@ module "versions_bucket" {
       }
     }
   ]
+  tags = module.tags.locals.common_tags
 }
 
 module "logs_bucket" {
   source  = "terraform-aws-modules/s3-bucket/aws"
-  version = "3.15.1"
+  version = "3.15.2"
 
   bucket                                = local.load_balancer_log_bucket
   acl                                   = "log-delivery-write"
@@ -111,4 +121,5 @@ module "logs_bucket" {
       }
     }
   ]
+  tags = module.tags.locals.common_tags
 }

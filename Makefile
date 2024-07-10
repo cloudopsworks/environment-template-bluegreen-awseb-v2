@@ -36,6 +36,8 @@ module.tf:
 		echo "Module values/${TARGET} not found... making placeholder." ; \
 		mkdir -p values/${TARGET}/ ; \
 		touch values/$(TARGET)/.placeholder ; \
+		mkdir -p values/${TARGET}/.ebextensions ; \
+		cp -p modules/extensions/ssh-limit.config packages/${TARGET}/.ebextensions/ ; \
 	else echo "Module values/${TARGET} found... all OK" ; \
 	fi
 
@@ -247,3 +249,6 @@ else
 	echo "platfrom $(OS) not supported to release from"
 	exit -1
 endif
+
+lint:
+	$(SELF) terraform/install terraform/get-modules terraform/get-plugins terraform/lint terraform/validate

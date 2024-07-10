@@ -12,12 +12,13 @@ module "app_dns_a" {
   count = !var.app_domain_disabled && !var.deployment_a_deactivated && !var.load_balancer_shared ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
-  version         = "1.0.4"
+  version         = "1.0.5"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
   release_name             = var.release_name_a
   namespace                = format("%s-%s", var.namespace, "a")
+  private_domain           = var.app_domain_private
   domain_name              = var.app_domain_name
   domain_name_alias_prefix = var.app_domain_alias
   domain_name_weight       = var.deployment_traffic == "a" ? 10 : 0
@@ -67,7 +68,7 @@ module "beanstalk_app_a" {
   count = !var.deployment_a_deactivated ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-deploy/aws"
-  version         = "1.0.10"
+  version         = "1.0.15"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
@@ -110,5 +111,5 @@ module "beanstalk_app_a" {
   port_mappings  = var.beanstalk_port_mappings
   rule_mappings  = [] #var.beanstalk_rule_mappings
   extra_settings = var.extra_settings
-  extra_tags     = var.extra_tags
+  extra_tags     = merge(var.extra_tags, module.tags.locals.common_tags)
 }
