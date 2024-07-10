@@ -60,7 +60,7 @@ else
 	exit -1
 endif
 
-.PHONY: state
+.PHONY: env/state
 env/state:
 	$(info "Checking state")
 #ifneq ("$(wildcard .bluegreen_state)","")
