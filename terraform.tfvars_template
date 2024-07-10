@@ -4,8 +4,11 @@
 #            Distributed Under Apache v2.0 License
 #
 region                   = "AWS REGION"
+organization_name        = "ORG_NAME"
+environment_name         = "ENV_NAME|Beanstalk"
 sts_assume_role          = "arn:aws:iam::ACCOUNT_ID:role/GITHubActionsRunRole"
 default_bucket_prefix    = "AWS S3 BUCKET PREFIX NAME THAT WILL BE USED FOR BUCKETS IN THIS ENV (LOGS+VERSION)"
+random_bucket_suffix     = true|false
 environment_name         = "ENVIRONMENT NAME"
 namespace                = "IDENTIFIES THE NAMESPACE FOR THE ENVIRONMENT TEAM" 
 repository_owner         = "GITHUB TEAM OWNER"
@@ -86,6 +89,7 @@ server_types    = ["SERVER TYPES LIST THIS WILL HELP TO ALLOCATE DEPLOY",]
 app_domain_name     = "DOMAIN WHERE TO CREATE ALIAS"
 app_domain_alias    = "DOMAIN NAME ALIAS"
 #app_domain_ttl      = 3600
+#app_domain_private = false
 
 ##
 # DNS Failover Configuration - uncomment to activate

@@ -14,12 +14,13 @@ module "app_dns_shared" {
   count = !var.app_domain_disabled && var.load_balancer_shared ? 1 : 0
 
   source          = "cloudopsworks/beanstalk-dns/aws"
-  version         = "1.0.4"
+  version         = "1.0.5"
   region          = var.region
   sts_assume_role = var.sts_assume_role
 
   release_name             = var.environment_name
   namespace                = var.namespace
+  private_domain           = var.app_domain_private
   domain_name              = var.app_domain_name
   domain_name_alias_prefix = var.app_domain_alias
   default_domain_ttl       = var.app_domain_ttl
